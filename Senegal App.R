@@ -8,7 +8,6 @@ library(shiny)
 library(shinythemes)
 library(leaflet)
 library(scales)
-library(plotly)
 library(rgdal)
 library(dplyr)
 library(BAMMtools)
@@ -74,17 +73,12 @@ server <- function(input, output) {
       group_by(District)
   })
   
-  
-  ###### Aligning Data with Shapefile
-  # data_input_ordered <- reactive({
-  #   data_input()[order(match(data_input()$District, districts$DISTRICT))]
-  # })
-  
-  
+  ####### Adding palette of colors
   palette <- reactive({
     colorBin("RdYlBu", domain = data_input()$Rain, bins = getJenksBreaks(data_input()$Rain, 5))
   })
   
+  ###### Creating the information that appears when of mouse-over
   labels <- reactive({
     paste("<p>", data_input()$District, "<p>",
           "<p>", round(data_input()$Rain, digits = 2), "<p>",
@@ -93,15 +87,15 @@ server <- function(input, output) {
   
   ###### Creating the map
   output$mymap <- renderLeaflet({
+    
     leaflet() %>%
       addTiles() %>%
       setView(lng = -14.4524, lat = 14.4974 , zoom = 7) %>%
       addPolygons( data = districts,
                    weight = 1,
                    smoothFactor = 0.5,
-                   color = "white",
                    fillOpacity = 0.8,
-                   fillColor = ~palette(data_input()$Rain), ##### Lacking colorize map, solve here
+                   color = ~palette()(data_input()$Rain),
                    highlight = highlightOptions(
                      weight = 5,
                      color = "#666666",
