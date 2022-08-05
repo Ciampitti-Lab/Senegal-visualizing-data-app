@@ -14,10 +14,11 @@ library(BAMMtools)
 library(htmltools)
 
 ###### Reading ShapeFile of Senegal's administrative districts
-districts <- readOGR("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/zonal_stats.shp")
+places <- readOGR("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/zonal_stats.shp")
 
 ##### Reading Data
-senegalBase <- read.csv("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/Test.csv", sep = ";", dec = ",")
+placeBase <- read.csv("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/Test.csv", sep = ";", dec = ",")
+showoptions <- names(subset(placeBase, select = -c(1,2)))
 
 # Define User Interface function (UI)
 ui <- fluidPage(theme = shinytheme("superhero"),
@@ -27,22 +28,20 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                   tabPanel("Visualization",
                            #Sidebar Panel
                            sidebarPanel(
-                             tags$h4("Select which data you want to visualize:"),
                              
-                             # Place for radio check to insert which data will be visualized
-                             radioButtons("dist", " ",
-                                          c("Precipitation" = "precip",
-                                            "Max. Temperature" = "maxtemp",
-                                            "Min. Temperature" = "mintemp",
-                                            "Evapotranspiration" = "evap")),
+                             # Place for select to insert which data will be visualized
+                             tags$h4("Select what data you want to visualize:"),
+                             varSelectInput("select",
+                                         " ",
+                                         subset(placeBase,select = -c(1,2))),
                              
                              # Place where users chose which year they want
                              tags$h4("Choose an year:"),
                              sliderInput("slider",
                                          " ",
-                                         min = min(senegalBase$Year),
-                                         max = max(senegalBase$Year),
-                                         value = min(senegalBase$Year),
+                                         min = min(placeBase$Year),
+                                         max = max(placeBase$Year),
+                                         value = min(placeBase$Year),
                                          step = 1)
                              
                            ),
@@ -63,25 +62,30 @@ ui <- fluidPage(theme = shinytheme("superhero"),
 
 
 # Define server function  
-server <- function(input, output) {
+server <- function(input, output, session) {
   
   
   ###### Filtering data
-  data_input <- reactive({
-    senegalBase %>%
+  dataInput <- reactive({
+    placeBase %>%
       filter(Year == input$slider)%>%
       group_by(District)
   })
   
+  choice <- reactive({
+    input$select
+  })
+  
+  
   ####### Adding palette of colors
   palette <- reactive({
-    colorBin("RdYlBu", domain = data_input()$Rain, bins = getJenksBreaks(data_input()$Rain, 5))
+    colorBin("RdYlBu", domain = dataInput()$Rain, bins = getJenksBreaks(dataInput()$Rain, 5))
   })
   
   ###### Creating the information that appears when of mouse-over
   labels <- reactive({
-    paste("<p>", data_input()$District, "<p>",
-          "<p>", round(data_input()$Rain, digits = 2), "<p>",
+    paste("<p>", dataInput()$District, "<p>",
+          "<p>", round(dataInput()$Rain, digits = 2), "<p>",
           sep ="")
   })
   
@@ -91,11 +95,11 @@ server <- function(input, output) {
     leaflet() %>%
       addTiles() %>%
       setView(lng = -14.4524, lat = 14.4974 , zoom = 7) %>%
-      addPolygons( data = districts,
+      addPolygons( data = places,
                    weight = 1,
                    smoothFactor = 0.5,
                    fillOpacity = 0.8,
-                   color = ~palette()(data_input()$Rain),
+                   color = ~palette()(dataInput()$Rain),
                    highlight = highlightOptions(
                      weight = 5,
                      color = "#666666",
@@ -105,7 +109,7 @@ server <- function(input, output) {
                    label = lapply(labels(), HTML)
                    ) %>%
       addLegend(pal = palette(),
-                values = data_input()$Rain,
+                values = dataInput()$Rain,
                 opacity = 0.7,
                 position = "bottomright")
   })
