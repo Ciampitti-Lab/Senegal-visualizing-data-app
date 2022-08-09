@@ -19,8 +19,7 @@ places <- readOGR("zonal_stats.shp")
 placeBase <- read.csv("Test.csv", sep = ";", dec = ",")
 
 ####### Define User Interface function (UI)
-ui <- fluidPage(
-                theme = shinytheme("superhero"),
+ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
                   theme = "united",
                   "Greographical Data Comparisons",
@@ -79,7 +78,7 @@ assess the impact of interventions considering five domains (productivity, econo
 environmental, human and social). Until recently, however, there has been a lack of integration
 across the domains relative to the evaluation of agricultural interventions for different regions
 around the globe."),
-                           tags$h5("A recent review executed by our team identified almost no studies addressing all five
+             tags$h5("A recent review executed by our team identified almost no studies addressing all five
 domains of the SIAF simultaneously, emphasizing this lack of integration. Many challenges that
 result from this issue include data isolation (relevant data in multiple individual databases), scale
 (data with different spatial and temporal scales), and integrity (lack of complete datasets).
@@ -87,15 +86,15 @@ Therefore, we propose to design an interactive dashboard to aggregate and summar
 available open-access data layers using the SIAF as a platform to facilitate the visualization of
 the domain interactions. Furthermore, we seek to create a unified data resource to enable
 integration and comparison across both spatial and temporal scales."),
-                           tags$h5("This platform targets the needs of donor-investment, policymakers, researchers and on-
+             tags$h5("This platform targets the needs of donor-investment, policymakers, researchers and on-
 ground extension-specialists to support planned interventions. Lastly, this platform will serve as
 an example for the application of the SIAF not only for Senegal but for multiple regions around
 the world."),
-                           tags$h2("Authors: "),
-                           "Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A.
+             tags$h2("Authors: "),
+             "Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A.
 Pouyan Nejadhashemi, Ignacio A. Ciampitti and Gustavo N. Santiago."
-                           )
-                )
+    )
+  )
 )
 
 
@@ -151,7 +150,7 @@ server <- function(input, output, session) {
                      bringToFront = TRUE
                    ),
                    label = lapply(labels(), HTML)
-                   ) %>%
+      ) %>%
       addLegend(pal = palette(),
                 values = dataInput()$dataUsed,
                 opacity = 0.7,
