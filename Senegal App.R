@@ -10,26 +10,24 @@ library(leaflet)
 library(scales)
 library(rgdal)
 library(dplyr)
-library(BAMMtools)
 library(htmltools)
 
 ####### Reading ShapeFile of Senegal's administrative districts
-places <- readOGR("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/zonal_stats.shp")
+places <- readOGR("zonal_stats.shp")
 
 ####### Reading Data
-placeBase <- read.csv("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/Test.csv", sep = ";", dec = ",")
+placeBase <- read.csv("Test.csv", sep = ";", dec = ",")
 
 ####### Define User Interface function (UI)
-ui <- fluidPage(theme = shinytheme("superhero"),
+ui <- fluidPage(
+                theme = shinytheme("superhero"),
                 navbarPage(
                   theme = "united",
                   "Greographical Data Comparisons",
                   tabPanel("Map visualization",
                            ####### Sidebar Panel
                            sidebarPanel(
-                            
-                             
-                              
+
                              ####### Place for select to insert which data will be visualized
                              tags$h3("Select what data you want to visualize:"),
                              varSelectInput("select",
