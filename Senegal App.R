@@ -13,40 +13,45 @@ library(dplyr)
 library(BAMMtools)
 library(htmltools)
 
-###### Reading ShapeFile of Senegal's administrative districts
+####### Reading ShapeFile of Senegal's administrative districts
 places <- readOGR("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/zonal_stats.shp")
 
-##### Reading Data
+####### Reading Data
 placeBase <- read.csv("C:/Users/gusta/Desktop/K-State/Senegal visualizing data app/Test.csv", sep = ";", dec = ",")
 
-# Define User Interface function (UI)
+####### Define User Interface function (UI)
 ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
                   theme = "united",
-                  "Senegal Ag Data Comparisons",
+                  "Greographical Data Comparisons",
                   tabPanel("Map visualization",
-                           #Sidebar Panel
+                           ####### Sidebar Panel
                            sidebarPanel(
+                            
                              
-                             # Place for select to insert which data will be visualized
-                             tags$h4("Select what data you want to visualize:"),
+                              
+                             ####### Place for select to insert which data will be visualized
+                             tags$h3("Select what data you want to visualize:"),
                              varSelectInput("select",
                                          " ",
                                          subset(placeBase,select = -c(1,2))),
                              
-                             # Place where users chose which year they want
-                             tags$h4("Choose a year:"),
+                             ####### Place where users chose which year they want
+                             tags$h3("Choose a year:"),
+                             radioButtons("mean",
+                                          " ",
+                                          c("Mean" = "yearMean",
+                                            "Choose a year bellow" = "choose")),
                              sliderInput("slider",
                                          " ",
                                          min = min(placeBase$Year),
                                          max = max(placeBase$Year),
                                          value = min(placeBase$Year),
-                                         step = 1),
-                             radioInput("mean", " ", c("Mean" = "yearMean"))
+                                         step = 1)
                              
                            ),
                            
-                           #Main Panel
+                           ####### Main Panel
                            mainPanel(
                              leafletOutput("mymap", height = 600),
                            ),
@@ -55,14 +60,17 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                   
                   tabPanel("Graph Plot Visualization", " *** Plot radar graph here ***"),
                   
+                  tabPanel("Instructions", " ***** Write instructions here *******"),
+                  
                   tabPanel("Data", 
-                           #Main Panel
-                           mainPanel(
-                             tags$h2("This is the data you have uploaded: "),
-                             dataTableOutput("dataInput")
-                           )),
+                           ####### Rendering the table of data user uploaded
+                            tags$h2("This is the data you have uploaded: "),
+                            dataTableOutput("dataInput")
+                           ),
                   
                   tabPanel("About",
+                           
+                           ####### Text showing or what the project is about
                            tags$h1("About the project:"),
                            tags$h5("The process of assessing the impact of agricultural interventions is a key point when
 deciding on future research investments and new policies. This task requires knowledge of the
@@ -88,23 +96,31 @@ the world."),
                            tags$h2("Authors: "),
                            "Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A.
 Pouyan Nejadhashemi, Ignacio A. Ciampitti and Gustavo N. Santiago."
-                           
-                           ),
-                           
-                  
+                           )
                 )
 )
 
 
 # Define server function  
 server <- function(input, output, session) {
+  place <- toString(names(subset(placeBase, select = c(1))))
   
   ####### Filtering data
   dataInput <- reactive({
-    placeBase %>%
-      filter(Year == input$slider) %>%
-      group_by(District) %>%
-      select(dataUsed = input$select)
+    
+    if(input$mean == "yearMean"){
+      choice <- toString(input$select)
+      placeBase %>%
+        group_by(States = eval(parse(text = place))) %>%
+        summarise(dataUsed = mean(eval(parse(text = choice))))
+    }
+    else if(input$mean == "choose"){
+      placeBase %>%
+        filter(Year == input$slider) %>%
+        group_by(States = eval(parse(text = place))) %>%
+        select(dataUsed = input$select)
+    }
+    
   })
   
   ####### Adding palette of colors
@@ -114,7 +130,7 @@ server <- function(input, output, session) {
   
   ####### Creating the information that appears when of mouse-over
   labels <- reactive({
-    paste("<p>", dataInput()$District, "<p>",
+    paste("<p>", dataInput()$States, "<p>",
           "<p>", round(dataInput()$dataUsed, digits = 2), "<p>",
           sep ="")
   })
