@@ -1,0 +1,72 @@
+@import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda');
+html { height: 100% } 
+body{
+    background-color: #8f9044;
+    font-family: 'Ruda';
+    height: 100%; 
+    margin: 0px; 
+    padding: 0px;
+}
+.navbar-default{
+    border: 0;
+    background-color: #cf1500;
+    font-size: 17px;
+    font-family: 'Ruda';
+}
+.navbar-default .navbar-brand{
+    font-size: 26px;
+    color: #ffffff;
+}
+.navbar-default .navbar-brand:focus, .navbar-default .navbar-brand:hover{
+    color: #ffffff;
+}
+.navbar-default .navbar-nav > li > a{
+    color: #ffffff;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #ffffff;
+  background-color: #f8a523;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #ffffff;
+  background-color: #f8a523;
+}
+.well{
+    background-color: #f8a523;
+    border:0;
+    color: #ffffff;
+    font-size: 17px;
+}
+.tab-pane.active{
+    background-color:#ffffff;
+}
+.nav-tabs{
+    background-color:#f8a523;
+    color: #ffffff;
+    border: 2px solid #cf1500;
+}
+.nav-tabs> li {
+    margin: -2px;
+}
+.nav-tabs> li > a{
+    color: #ffffff;
+}
+.nav-tabs>li.active>a,
+.nav-tabs>li.active>a:focus,
+.nav-tabs>li.active>a:hover{
+    color: #ffffff;
+    border: 2px solid #cf1500;
+    background-color:#f8a523;
+    border-radius: 6px;
+}
+.nav-tabs>li.active>a,
+.nav-tabs>li.active>a:focus,
+.nav-tabs>li.active>a:active{
+    color: #cf1500;
+    border: 2px solid #cf1500;
+    background-color:#f8a523;
+    border-radius: 6px;
+}
