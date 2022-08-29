@@ -1,7 +1,7 @@
 @import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda');
 html { height: 100% } 
 body{
-    background-color: #8f9044;
+    background-color:#c7c7c9;
     font-family: 'Ruda';
     height: 100%; 
     margin: 0px; 
@@ -9,9 +9,10 @@ body{
 }
 .navbar-default{
     border: 0;
-    background-color: #cf1500;
+    background-color: #253659;
     font-size: 17px;
     font-family: 'Ruda';
+    border-bottom-color: 5px solid #03A696;
 }
 .navbar-default .navbar-brand{
     font-size: 26px;
@@ -26,16 +27,16 @@ body{
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
   color: #ffffff;
-  background-color: #f8a523;
+  background-color: #03A696;
 }
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
   color: #ffffff;
-  background-color: #f8a523;
+  background-color: #03A696;
 }
 .well{
-    background-color: #f8a523;
+    background-color: #03A696;
     border:0;
     color: #ffffff;
     font-size: 17px;
@@ -44,9 +45,9 @@ body{
     background-color:#ffffff;
 }
 .nav-tabs{
-    background-color:#f8a523;
+    background-color:#03A696;
     color: #ffffff;
-    border: 2px solid #cf1500;
+    border: 2px solid #253659;
 }
 .nav-tabs> li {
     margin: -2px;
@@ -58,15 +59,15 @@ body{
 .nav-tabs>li.active>a:focus,
 .nav-tabs>li.active>a:hover{
     color: #ffffff;
-    border: 2px solid #cf1500;
-    background-color:#f8a523;
+    border: 2px solid #253659;
+    background-color:#03A696;
     border-radius: 6px;
 }
 .nav-tabs>li.active>a,
 .nav-tabs>li.active>a:focus,
 .nav-tabs>li.active>a:active{
-    color: #cf1500;
-    border: 2px solid #cf1500;
-    background-color:#f8a523;
+    color: #253659;
+    border: 2px solid #253659;
+    background-color:#03A696;
     border-radius: 6px;
 }
