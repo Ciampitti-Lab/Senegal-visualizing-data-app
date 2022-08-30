@@ -74,3 +74,7 @@ body{
     background-color:#03A696;
     border-radius: 6px;
 }
+#maptxt{
+    text-align: center;
+    color: #ffffff
+}

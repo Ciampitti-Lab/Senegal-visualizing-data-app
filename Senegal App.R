@@ -59,6 +59,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                   id = "tabselected",
                                                   tabPanel("Map",
                                                            value=1,
+                                                           textOutput("maptxt"),
                                                            ####### Showing map
                                                            leafletOutput("mymap"),
                                                            img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
@@ -298,6 +299,29 @@ server <- function(input, output, session) {
                 values = dataInput()$dataUsed,
                 opacity = 0.7,
                 position = "bottomright")
+  })
+  
+  ###### Text to appear above the map
+  output$maptxt <- renderText({
+    
+    str2 = input$select
+    str3 = " from "
+    str4 = input$year[1]
+    str5 = " to "
+    str6 = input$year[2]
+    str1 = " of "
+    
+    if (input$year[1] != input$year[2]){
+      
+      result = paste(str2,str3,str4,str5,str6)
+      
+    }
+    else if(input$year[1] == input$year[2]){
+      
+      result = paste(str2,str1,str4)
+      
+    }
+    
   })
   
   ####### Creating the graph
