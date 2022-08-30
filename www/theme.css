@@ -42,7 +42,10 @@ body{
     font-size: 17px;
 }
 .tab-pane.active{
-    background-color:#ffffff;
+    background-color:#03A696;
+}
+.tab-content{
+    background-color:#03A696;
 }
 .nav-tabs{
     background-color:#03A696;

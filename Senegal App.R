@@ -38,7 +38,6 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                            sidebarPanel(
 
                                          ####### Place for select to insert which data will be visualized
-                                         tags$h3("Select what data you want to visualize:"),
                                          conditionalPanel(condition = "input.tabselected==1",
                                                           ####### Place for select to insert which data will be visualized in map
                                                           uiOutput("select")
@@ -61,7 +60,9 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                   tabPanel("Map",
                                                            value=1,
                                                            ####### Showing map
-                                                           leafletOutput("mymap")
+                                                           leafletOutput("mymap"),
+                                                           img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
+                                                           
                                                   ),
                                                   tabPanel("Graphs",
                                                            value=2,
@@ -74,7 +75,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                         ),
                   tabPanel("Data", 
                            ####### Rendering the table of data user uploaded
-                            tags$h2("This is the data you have uploaded: "),
+                            tags$h2("This is the raw data: "),
                             dataTableOutput("dataInput")
                            ),
 
@@ -153,6 +154,8 @@ server <- function(input, output, session) {
   
   ####### Creating Select for period
   output$year <- renderUI({
+    
+    if(input$selectgraph != "cor"){
     year <- toString(names(subset(placeBase, select = c(2))))
     choice <- placeBase %>%
       group_by(Year = eval(parse(text = year)))
@@ -165,6 +168,8 @@ server <- function(input, output, session) {
                 value = c(minimo, maximo),
                 step = 1,
                 sep = "")
+    }
+    
   })
   
   ####### Filtering data for map
@@ -303,9 +308,9 @@ server <- function(input, output, session) {
     if (input$selectgraph == "bar"){
       ggplot(dataInputGraph(), aes(x=Places, y=Data))+
         geom_bar(stat="identity", color="#253659", fill="#03A696")+
-        geom_text(aes(label=round(Data, 2)), vjust=1.6, color="white", size=3.5)+
+        geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
         theme(
-          panel.background = element_rect(fill = "#f0e5c9",
+          panel.background = element_rect(fill = "#c7c7c9",
                                           colour = "#f0e5c9",
                                           size = 0.5, linetype = "solid")
         )
@@ -341,11 +346,11 @@ server <- function(input, output, session) {
       corGraph <- dataInputGraph()
       corGraph[,1] <- NULL
       
-      corPlot(corGraph,
+        corPlot(corGraph,
               min.length = 3,
               scale = FALSE,
-              stars = TRUE,
               pval = TRUE)
+      
     }
     
     else if(input$selectgraph == "line"){
@@ -357,7 +362,7 @@ server <- function(input, output, session) {
   })
   
   ####### Summarizing data input
-  output$dataInput <- renderDataTable(dataInputGraph())
+  output$dataInput <- renderDataTable(placeBase)
   
 }
 
