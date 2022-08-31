@@ -6,6 +6,8 @@
 # Loading R packages
 library(shiny)
 library(leaflet)
+library(leaflet.extras2)
+library(mapview)
 library(scales)
 library(rgdal)
 library(dplyr)
@@ -15,15 +17,15 @@ library(RColorBrewer)
 library(fmsb)
 library(psych)
 library(shapefiles)
+library(ggradar)
+library(ggcorrplot)
+
 
 ####### Reading ShapeFile of Senegal's administrative districts
-
 places <- readOGR("zonal_stats.shp")
 
 ####### Reading Data
 placeBase <- read.csv("Test.csv", sep=";", dec=",")
-
-
 
 ####### Define User Interface function (UI)
 ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "theme.css")),
@@ -48,10 +50,11 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           ####### Place for select to insert which data will be visualized in graphs
                                                           uiOutput("selectfgraph"),
                                                           ####### Place for select to insert which places they want to compare on graphs
-                                                          uiOutput("selectplaces")
+                                                          uiOutput("selectplaces"),
+                                                          
                                                         ),
                                          ####### Place where users chose which year they want
-                                         uiOutput("year"),
+                                         uiOutput("year")
                                         ),
                            ####### Main Panel
                            mainPanel(
@@ -62,13 +65,15 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                            textOutput("maptxt"),
                                                            ####### Showing map
                                                            leafletOutput("mymap"),
-                                                           img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
+                                                           img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px"),
                                                            
                                                   ),
                                                   tabPanel("Graphs",
                                                            value=2,
+                                                           textOutput("plottxt"),
                                                            ####### Ploting graph
-                                                           plotOutput("graph")
+                                                           plotOutput("graph"),
+                                                           downloadButton("downloadGraph", "Download Plot")
                                                   )
                                                 )
                                     )
@@ -77,6 +82,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                   tabPanel("Data", 
                            ####### Rendering the table of data user uploaded
                             tags$h2("This is the raw data: "),
+                            downloadButton("downloadData", "Download"),
                             dataTableOutput("dataInput")
                            ),
 
@@ -101,33 +107,33 @@ server <- function(input, output, session) {
   output$selectgraph <- renderUI({
     selectInput("selectgraph",
                 "Type of graph:",
-                choices = c("Bar Graph" = "bar",
-                            "Radar Graph" = "radar",
-                            "Correlation Graph" = "cor",
-                            "Line Graph" = "line")
+                choices = c("Bar Graph" = "Bar Graph",
+                            "Radar Graph" = "Radar Graph",
+                            "Correlation Graph" = "Correlation Graph",
+                            "Line Graph" = "Line Graph")
     )
   })
   
   ####### Creating Dropdown for data to be ploted on graph
   output$selectfgraph <- renderUI({
-    if(input$selectgraph == "radar"){
+    if(input$selectgraph == "Radar Graph"){
       varSelectInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)),
                      multiple = TRUE)
     }
-    else if(input$selectgraph == "cor"){
+    else if(input$selectgraph == "Correlation Graph"){
       varSelectInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)),
                      multiple = TRUE)
     }
-    else if(input$selectgraph == "bar"){
+    else if(input$selectgraph == "Bar Graph"){
       varSelectInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)))
     }
-    else if(input$selectgraph == "line"){
+    else if(input$selectgraph == "Line Graph"){
       varSelectInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)))
@@ -140,12 +146,12 @@ server <- function(input, output, session) {
     choice <- placeBase %>%
       group_by(States = eval(parse(text = place)))
     
-    if(input$selectgraph == "cor"){
+    if(input$selectgraph == "Correlation Graph"){
       selectInput("selectplaces",
                   "Places you want to visualize on graph:",
                   choice$States)
     }
-    else if (input$selectgraph != "cor"){
+    else if (input$selectgraph != "Correlation Graph"){
       selectInput("selectplaces",
                   "Places you want to visualize on graph:",
                   choice$States,
@@ -156,7 +162,7 @@ server <- function(input, output, session) {
   ####### Creating Select for period
   output$year <- renderUI({
     
-    if(input$selectgraph != "cor"){
+    if(input$selectgraph != "Correlation Graph"){
     year <- toString(names(subset(placeBase, select = c(2))))
     choice <- placeBase %>%
       group_by(Year = eval(parse(text = year)))
@@ -184,9 +190,10 @@ server <- function(input, output, session) {
     
     placeBase %>%
         filter(between(eval(parse(text = period)), input$year[1], input$year[2]))%>%
-        group_by(States = eval(parse(text = place))) %>%
-        summarise(dataUsed = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
-        arrange(factor(States, levels = placeOrder))
+        group_by(Districts = eval(parse(text = place)),
+                 Years = eval(parse(text = period))) %>%
+        summarise(Data = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
+        arrange(factor(Districts, levels = placeOrder))
     
   })
   
@@ -217,7 +224,7 @@ server <- function(input, output, session) {
     place <- toString(names(subset(placeBase, select = c(1))))
     period <- toString(names(subset(placeBase, select = c(2))))
     
-    if (input$selectgraph == "bar"){
+    if (input$selectgraph == "Bar Graph"){
       
         choiceG <- toString(input$selectfgraph)
         placeBase %>%
@@ -228,7 +235,7 @@ server <- function(input, output, session) {
       
     }
     
-    else if (input$selectgraph == "radar"){
+    else if (input$selectgraph == "Radar Graph"){
       
       choicesD <- as.character(input$selectfgraph)
       
@@ -236,11 +243,13 @@ server <- function(input, output, session) {
           filter(eval(parse(text = place)) %in% input$selectplaces,
                  between(eval(parse(text = period)), input$year[1], input$year[2])) %>%
           group_by(Places = eval(parse(text = place))) %>%
-          summarise_at(vars(choicesD), mean, na.rm=TRUE)
+          summarise_at(vars(choicesD), mean, na.rm=TRUE) %>%
+          ungroup() %>%
+          mutate_at(vars(-Places), scales::rescale)
       
     }
     
-    else if (input$selectgraph == "cor"){
+    else if (input$selectgraph == "Correlation Graph"){
       
       choicesD <- as.character(input$selectfgraph)
       
@@ -251,7 +260,7 @@ server <- function(input, output, session) {
       
     }
     
-    else if(input$selectgraph == "line"){
+    else if(input$selectgraph == "Line Graph"){
       
       choicesD <- as.character(input$selectfgraph)
       
@@ -267,18 +276,18 @@ server <- function(input, output, session) {
   
   ####### Adding colors palettes
   palette <- reactive({
-    colorNumeric("RdYlBu", domain = dataInput()$dataUsed)
+    colorNumeric("RdYlBu", domain = dataInput()$Data)
   })
   
   ####### Creating the information that appears when mouse-over
   labels <- reactive({
-    paste("<p>", dataInput()$States, "<p>",
-          "<p>", round(dataInput()$dataUsed, digits = 2), "<p>",
+    paste("<p>", dataInput()$Districts, "<p>",
+          "<p>", round(dataInput()$Data, digits = 2), "<p>",
           sep ="")
   })
   
-  ####### Creating the map
-  output$mymap <- renderLeaflet({
+  ####### Creating map
+  map <- reactive({
     
     leaflet(width = 200, height = 300) %>%
       addTiles() %>%
@@ -286,7 +295,7 @@ server <- function(input, output, session) {
                    weight = 1,
                    smoothFactor = 0.5,
                    fillOpacity = 0.8,
-                   color = ~palette()(dataInput()$dataUsed),
+                   color = ~palette()(dataInput()$Data),
                    highlight = highlightOptions(
                      weight = 5,
                      color = "#666666",
@@ -296,14 +305,26 @@ server <- function(input, output, session) {
                    label = lapply(labels(), HTML)
       ) %>%
       addLegend(pal = palette(),
-                values = dataInput()$dataUsed,
+                values = dataInput()$Data,
                 opacity = 0.7,
-                position = "bottomright")
+                position = "bottomright") %>%
+      
+      addEasyprint(options = easyprintOptions(position = "topright",
+                                              exportOnly=TRUE,
+                                              sizeModes = "CurrentSize",
+                                              filename = TitleMap()))
+                   
   })
   
-  ###### Text to appear above the map
-  output$maptxt <- renderText({
+  ####### Rendering map
+  output$mymap <- renderLeaflet({
     
+    map()
+    
+  })
+  
+  ####### Title of map
+  TitleMap <- reactive({
     str2 = input$select
     str3 = " from "
     str4 = input$year[1]
@@ -316,20 +337,25 @@ server <- function(input, output, session) {
       result = paste(str2,str3,str4,str5,str6)
       
     }
+    
     else if(input$year[1] == input$year[2]){
       
       result = paste(str2,str1,str4)
       
     }
+  })
+  
+  ###### Text to appear above the map
+  output$maptxt <- renderText({
+    
+    TitleMap()
     
   })
   
-  ####### Creating the graph
-  output$graph <- renderPlot({
+  ####### Creating Plots
+  plotInput <- reactive({
     
-    par(bg = '#8c8c8c')
-    
-    if (input$selectgraph == "bar"){
+    if (input$selectgraph == "Bar Graph"){
       ggplot(dataInputGraph(), aes(x=Places, y=Data))+
         geom_bar(stat="identity", color="#253659", fill="#03A696")+
         geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
@@ -340,44 +366,37 @@ server <- function(input, output, session) {
         )
     }
     
-    else if(input$selectgraph == "radar"){
+    else if(input$selectgraph == "Radar Graph"){
       
-      if(nrow(dataInputGraph()) == 1){
-        dataGraph <- dataInputGraph()
-        rownames(dataGraph) <- dataInputGraph()[,1]
-        dataGraph[,1] <- NULL
-      }
-      if(nrow(dataInputGraph()) > 1){
-        dataGraph <- data.frame(dataInputGraph(), row.names = 1)
-      }
+      dataInputGraph() %>%
+          ggradar(
+            font.radar = "roboto",
+            grid.label.size = 0,  
+            axis.label.size = 5, 
+            group.point.size = 3   
+          ) + 
+            theme(
+              legend.position = c(1, 0),  
+              legend.justification = c(1, 0),
+              legend.text = element_text(size = 8, family = "roboto"),
+              legend.key = element_rect(fill = NA, color = NA),
+              legend.background = element_blank()
+            )
       
-      radarGraph <- rbind(max_min(), dataGraph)
-      
-      coul <- brewer.pal(nrow(radarGraph), "RdYlBu")
-      
-      radarchart(radarGraph, axistype = 1,
-                 pcol=coul , pfcol=NULL , plwd=4 , plty=1,
-                 #custom the grid
-                 cglcol="grey", cglty=1, axislabcol="#8c8c8c", cglwd=0.8,
-                 #custom labels
-                 vlcex=0.8,
-      )
-      legend(x=1.1, y=1, legend = rownames(radarGraph[-c(1,2),]), bty = "n", pch=20 , col=coul , text.col = "black", cex=0.7, pt.cex=3)
     }
     
-    else if(input$selectgraph == "cor"){
+    else if(input$selectgraph == "Correlation Graph"){
       
       corGraph <- dataInputGraph()
       corGraph[,1] <- NULL
+      corr <- round(cor(corGraph), 1)
       
-        corPlot(corGraph,
-              min.length = 3,
-              scale = FALSE,
-              pval = TRUE)
+      ggcorrplot(corr, hc.order = TRUE, type = "lower",
+                 lab = TRUE)
       
     }
     
-    else if(input$selectgraph == "line"){
+    else if(input$selectgraph == "Line Graph"){
       ggplot(dataInputGraph(), aes(x = Year, y = Data, color = Places)) +
         geom_line()+
         theme(panel.background = element_rect(fill = "#f0e5c9"))
@@ -385,8 +404,69 @@ server <- function(input, output, session) {
     
   })
   
+  ####### Rendering Plots
+  output$graph <- renderPlot({
+    
+   plotInput()
+    
+  })
+  
+  ####### Title of plot
+  Title <- reactive({
+    
+    str2 = input$selectgraph
+    str7 = toString(input$selectfgraph)
+    str3 = " from "
+    str4 = input$year[1]
+    str5 = " to "
+    str6 = input$year[2]
+    str1 = " of "
+    
+    if (input$year[1] != input$year[2]){
+      
+      result = paste(str2,str1,str7,str3,str4,str5,str6)
+      
+    }
+    
+    else if(input$year[1] == input$year[2]){
+      
+      result = paste(str2,str1,str7,str1,str4)
+      
+    }
+  })
+  
+  ###### Text to appear above the graph
+  output$plottxt <- renderText({
+    
+    Title()
+    
+  })
+  
+  ####### Downloading Plot as file
+  output$downloadGraph <- downloadHandler(
+    
+    filename = function() {
+      paste(Title(), ".png", sep = "")
+    },
+    content = function(file) {
+      png(file)
+      print({plotInput()})
+      dev.off()
+    }
+  )
+  
   ####### Summarizing data input
   output$dataInput <- renderDataTable(placeBase)
+  
+  ####### Downloading Table as file
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("SenegalDataset", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(placeBase, file, row.names = FALSE)
+    }
+  )
   
 }
 
