@@ -35,6 +35,15 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                 navbarPage(
                   theme = "united",
                   "Senegal Data Visualization",
+                  tabPanel("Instructions",
+                           mainPanel(tags$h1("Instructions"),
+                                      tags$video(src = "Video Example.mp4",
+                                                 type = "video/mp4",
+                                                 autoplay = FALSE,
+                                                 controls = TRUE,
+                                                 height = 700,
+                                                 width = 700))
+                           ),
                   tabPanel("Visualization",
                            ####### Sidebar Panel
                            sidebarPanel(
@@ -117,16 +126,18 @@ server <- function(input, output, session) {
   ####### Creating Dropdown for data to be ploted on graph
   output$selectfgraph <- renderUI({
     if(input$selectgraph == "Radar Graph"){
-      varSelectInput("selectfgraph",
+      varSelectizeInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)),
-                     multiple = TRUE)
+                     multiple = TRUE,
+                     options = list(maxItems = 10))
     }
     else if(input$selectgraph == "Correlation Graph"){
-      varSelectInput("selectfgraph",
+      varSelectizeInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)),
-                     multiple = TRUE)
+                     multiple = TRUE,
+                     options = list(maxItems = 10))
     }
     else if(input$selectgraph == "Bar Graph"){
       varSelectInput("selectfgraph",
@@ -152,10 +163,11 @@ server <- function(input, output, session) {
                   choice$States)
     }
     else if (input$selectgraph != "Correlation Graph"){
-      selectInput("selectplaces",
+      selectizeInput("selectplaces",
                   "Places you want to visualize on graph:",
                   choice$States,
-                  multiple = TRUE)
+                  multiple = TRUE,
+                  options = list(maxItems = 10))
     }
   })
   
