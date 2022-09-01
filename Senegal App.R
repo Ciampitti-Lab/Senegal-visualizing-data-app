@@ -35,15 +35,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                 navbarPage(
                   theme = "united",
                   "Senegal Data Visualization",
-                  tabPanel("Instructions",
-                           mainPanel(tags$h1("Instructions"),
-                                      tags$video(src = "Video Example.mp4",
-                                                 type = "video/mp4",
-                                                 autoplay = FALSE,
-                                                 controls = TRUE,
-                                                 height = 700,
-                                                 width = 700))
-                           ),
+                  tabPanel("Instructions"),
                   tabPanel("Visualization",
                            ####### Sidebar Panel
                            sidebarPanel(
@@ -202,8 +194,7 @@ server <- function(input, output, session) {
     
     placeBase %>%
         filter(between(eval(parse(text = period)), input$year[1], input$year[2]))%>%
-        group_by(Districts = eval(parse(text = place)),
-                 Years = eval(parse(text = period))) %>%
+        group_by(Districts = eval(parse(text = place))) %>%
         summarise(Data = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
         arrange(factor(Districts, levels = placeOrder))
     
