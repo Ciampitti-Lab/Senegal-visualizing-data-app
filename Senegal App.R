@@ -39,11 +39,11 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                   tabPanel("Visualization",
                            ####### Sidebar Panel
                            sidebarPanel(
-
                                          ####### Place for select to insert which data will be visualized
                                          conditionalPanel(condition = "input.tabselected==1",
                                                           ####### Place for select to insert which data will be visualized in map
-                                                          uiOutput("select")
+                                                          uiOutput("select"),
+                                                          uiOutput("yearmap")
                                                           ),
                                          conditionalPanel(condition = "input.tabselected==2",
                                                           ####### Place for select to insert which graph you want to visualize
@@ -52,10 +52,13 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           uiOutput("selectfgraph"),
                                                           ####### Place for select to insert which places they want to compare on graphs
                                                           uiOutput("selectplaces"),
-                                                          
+                                                          uiOutput("yearplot")
                                                         ),
-                                         ####### Place where users chose which year they want
-                                         uiOutput("year")
+                                         conditionalPanel(condition = "input.tabselected==3",
+                                                          uiOutput("selectfgraphSIAF"),
+                                                          uiOutput("selectplacesSIAF"),
+                                                          uiOutput("yearSIAF")
+                                                          ),
                                         ),
                            ####### Main Panel
                            mainPanel(
@@ -69,6 +72,12 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                            img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px"),
                                                            
                                                   ),
+                                                 tabPanel("SIAF",
+                                                          value=3,
+                                                          textOutput("plottxtSIAF"),
+                                                          ####### Ploting graph
+                                                          plotOutput("graphSIAF"),
+                                                          downloadButton("downloadGraphSIAF", "Download Plot")),
                                                   tabPanel("Graphs",
                                                            value=2,
                                                            textOutput("plottxt"),
@@ -109,7 +118,6 @@ server <- function(input, output, session) {
     selectInput("selectgraph",
                 "Type of graph:",
                 choices = c("Bar Graph" = "Bar Graph",
-                            "Radar Graph" = "Radar Graph",
                             "Correlation Graph" = "Correlation Graph",
                             "Line Graph" = "Line Graph")
     )
@@ -117,14 +125,8 @@ server <- function(input, output, session) {
   
   ####### Creating Dropdown for data to be ploted on graph
   output$selectfgraph <- renderUI({
-    if(input$selectgraph == "Radar Graph"){
-      varSelectizeInput("selectfgraph",
-                     "Data you want to visualize on graph:",
-                     subset(placeBase,select = -c(1,2)),
-                     multiple = TRUE,
-                     options = list(maxItems = 10))
-    }
-    else if(input$selectgraph == "Correlation Graph"){
+    
+    if(input$selectgraph == "Correlation Graph"){
       varSelectizeInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)),
@@ -141,6 +143,18 @@ server <- function(input, output, session) {
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)))
     }
+    
+  })
+  
+  ####### Creating Dropdown for data to be ploted on graph in SIAF
+  output$selectfgraphSIAF <- renderUI({
+    
+    varSelectizeInput("selectfgraphSIAF",
+                      "Data you want to visualize on graph:",
+                      subset(placeBase,select = -c(1,2)),
+                      multiple = TRUE,
+                      options = list(maxItems = 10))
+    
   })
   
   ####### Creating Dropdown for places to plot on graph
@@ -161,12 +175,26 @@ server <- function(input, output, session) {
                   multiple = TRUE,
                   options = list(maxItems = 10))
     }
+    
   })
   
-  ####### Creating Select for period
-  output$year <- renderUI({
+  ####### Creating Dropdown for places to plot on graph in SIAF
+  output$selectplacesSIAF <- renderUI({
+    place <- toString(names(subset(placeBase, select = c(1))))
+    choice <- placeBase %>%
+      group_by(States = eval(parse(text = place)))
     
-    if(input$selectgraph != "Correlation Graph"){
+    selectizeInput("selectplacesSIAF",
+                   "Places you want to visualize on graph:",
+                   choice$States,
+                   multiple = TRUE,
+                   options = list(maxItems = 10))
+    
+  })
+  
+  ####### Creating Select for periodS
+  output$yearmap <- renderUI({
+    
     year <- toString(names(subset(placeBase, select = c(2))))
     choice <- placeBase %>%
       group_by(Year = eval(parse(text = year)))
@@ -179,7 +207,42 @@ server <- function(input, output, session) {
                 value = c(minimo, maximo),
                 step = 1,
                 sep = "")
+    
+  })
+  
+  output$yearplot <- renderUI({
+    
+    if(input$selectgraph != "Correlation Graph"){
+      year <- toString(names(subset(placeBase, select = c(2))))
+      choice <- placeBase %>%
+        group_by(Year = eval(parse(text = year)))
+      minimo <- min(choice$Year)
+      maximo <- max(choice$Year)
+      sliderInput("year",
+                  "Choose the mean between below years or one year:",
+                  min = minimo,
+                  max = maximo,
+                  value = c(minimo, maximo),
+                  step = 1,
+                  sep = "")
     }
+    
+  })
+  
+  output$yearSIAF <- renderUI({
+    
+      year <- toString(names(subset(placeBase, select = c(2))))
+      choice <- placeBase %>%
+        group_by(Year = eval(parse(text = year)))
+      minimo <- min(choice$Year)
+      maximo <- max(choice$Year)
+      sliderInput("year",
+                  "Choose the mean between below years or one year:",
+                  min = minimo,
+                  max = maximo,
+                  value = c(minimo, maximo),
+                  step = 1,
+                  sep = "")
     
   })
   
@@ -193,32 +256,10 @@ server <- function(input, output, session) {
     choice <- toString(input$select)
     
     placeBase %>%
-        filter(between(eval(parse(text = period)), input$year[1], input$year[2]))%>%
+        filter(between(eval(parse(text = period)), input$yearmap[1], input$yearmap[2]))%>%
         group_by(Districts = eval(parse(text = place))) %>%
         summarise(Data = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
         arrange(factor(Districts, levels = placeOrder))
-    
-  })
-  
-  ####### Getting maximum and minimum values
-  max_min <- reactive({
-    
-    choicesD <- as.character(input$selectfgraph)
-    
-    filtro <- subset(placeBase, select = -c(1,2))
-    
-    n_filtro <- filtro%>%
-      select_at(vars(choicesD))
-    
-    max <- n_filtro %>%
-      summarise_all(max, na.rm=TRUE)
-    
-    min <- n_filtro %>%
-      summarise_all(min, na.rm=TRUE)
-    
-    max_min <- rbind(max, min)
-    
-    max_min <- data.frame(max_min, row.names = c("Max", "Min"))
     
   })
   
@@ -232,23 +273,9 @@ server <- function(input, output, session) {
         choiceG <- toString(input$selectfgraph)
         placeBase %>%
           filter(eval(parse(text = place)) %in% input$selectplaces,
-                 between(eval(parse(text = period)), input$year[1], input$year[2])) %>%
+                 between(eval(parse(text = period)), input$yearplot[1], input$yearplot[2])) %>%
           group_by(Places = eval(parse(text = place))) %>%
           summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE)) 
-      
-    }
-    
-    else if (input$selectgraph == "Radar Graph"){
-      
-      choicesD <- as.character(input$selectfgraph)
-      
-      placeBase %>%
-          filter(eval(parse(text = place)) %in% input$selectplaces,
-                 between(eval(parse(text = period)), input$year[1], input$year[2])) %>%
-          group_by(Places = eval(parse(text = place))) %>%
-          summarise_at(vars(choicesD), mean, na.rm=TRUE) %>%
-          ungroup() %>%
-          mutate_at(vars(-Places), scales::rescale)
       
     }
     
@@ -269,11 +296,28 @@ server <- function(input, output, session) {
       
       placeBase %>%
         filter(eval(parse(text = place)) %in% input$selectplaces,
-               between(eval(parse(text = period)), input$year[1], input$year[2])) %>%
+               between(eval(parse(text = period)), input$yearplot[1], input$yearplot[2])) %>%
         group_by(Year = eval(parse(text = period)),
                  Places = eval(parse(text = place))) %>%
         select(Data = choicesD)
     }
+    
+  })
+  
+  ####### Filtering data for SIAF
+  dataInputGraphSIAF <- reactive({
+    place <- toString(names(subset(placeBase, select = c(1))))
+    period <- toString(names(subset(placeBase, select = c(2))))
+    
+    choicesD <- as.character(input$selectfgraphSIAF)
+    
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+             between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+      group_by(Places = eval(parse(text = place))) %>%
+      summarise_at(vars(choicesD), mean, na.rm=TRUE) %>%
+      ungroup() %>%
+      mutate_at(vars(-Places), scales::rescale)
     
   })
   
@@ -364,28 +408,9 @@ server <- function(input, output, session) {
         geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
         theme(
           panel.background = element_rect(fill = "#c7c7c9",
-                                          colour = "#f0e5c9",
+                                          colour = "#c7c7c9",
                                           size = 0.5, linetype = "solid")
         )
-    }
-    
-    else if(input$selectgraph == "Radar Graph"){
-      
-      dataInputGraph() %>%
-          ggradar(
-            font.radar = "roboto",
-            grid.label.size = 0,  
-            axis.label.size = 5, 
-            group.point.size = 3   
-          ) + 
-            theme(
-              legend.position = c(1, 0),  
-              legend.justification = c(1, 0),
-              legend.text = element_text(size = 8, family = "roboto"),
-              legend.key = element_rect(fill = NA, color = NA),
-              legend.background = element_blank()
-            )
-      
     }
     
     else if(input$selectgraph == "Correlation Graph"){
@@ -402,8 +427,28 @@ server <- function(input, output, session) {
     else if(input$selectgraph == "Line Graph"){
       ggplot(dataInputGraph(), aes(x = Year, y = Data, color = Places)) +
         geom_line()+
-        theme(panel.background = element_rect(fill = "#f0e5c9"))
+        theme(panel.background = element_rect(fill = "#c7c7c9"))
     }
+    
+  })
+  
+  ####### Creating Plots for SIAF
+  plotInputSIAF <- reactive({
+    
+    dataInputGraphSIAF() %>%
+      ggradar(
+        font.radar = "roboto",
+        grid.label.size = 0,  
+        axis.label.size = 5, 
+        group.point.size = 3   
+      ) + 
+      theme(
+        legend.position = c(1, 0),  
+        legend.justification = c(1, 0),
+        legend.text = element_text(size = 8, family = "roboto"),
+        legend.key = element_rect(fill = NA, color = NA),
+        legend.background = element_blank()
+      )
     
   })
   
@@ -414,24 +459,55 @@ server <- function(input, output, session) {
     
   })
   
+  ####### Rendering SIAF Plots
+  output$graphSIAF <- renderPlot({
+    
+    plotInputSIAF()
+    
+  })
+  
   ####### Title of plot
   Title <- reactive({
     
     str2 = input$selectgraph
     str7 = toString(input$selectfgraph)
     str3 = " from "
-    str4 = input$year[1]
+    str4 = input$yearplot[1]
     str5 = " to "
-    str6 = input$year[2]
+    str6 = input$yearplot[2]
     str1 = " of "
     
-    if (input$year[1] != input$year[2]){
+    if (input$yearplot[1] != input$yearplot[2]){
       
       result = paste(str2,str1,str7,str3,str4,str5,str6)
       
     }
     
-    else if(input$year[1] == input$year[2]){
+    else if(input$yearplot[1] == input$yearplot[2]){
+      
+      result = paste(str2,str1,str7,str1,str4)
+      
+    }
+  })
+  
+  ####### Title of plot SIAF
+  TitleSIAF <- reactive({
+    
+    str2 = "Radar Plot "
+    str7 = toString(input$selectfgraphSIAF)
+    str3 = " from "
+    str4 = input$yearSIAF[1]
+    str5 = " to "
+    str6 = input$yearSIAF[2]
+    str1 = " of "
+    
+    if (input$yearSIAF[1] != input$yearSIAF[2]){
+      
+      result = paste(str2,str1,str7,str3,str4,str5,str6)
+      
+    }
+    
+    else if(input$yearSIAF[1] == input$yearSIAF[2]){
       
       result = paste(str2,str1,str7,str1,str4)
       
@@ -445,6 +521,13 @@ server <- function(input, output, session) {
     
   })
   
+  ###### Text to appear above the graph in SIAF
+  output$plottxtSIAF <- renderText({
+    
+    TitleSIAF()
+    
+  })
+  
   ####### Downloading Plot as file
   output$downloadGraph <- downloadHandler(
     
@@ -454,6 +537,19 @@ server <- function(input, output, session) {
     content = function(file) {
       png(file)
       print({plotInput()})
+      dev.off()
+    }
+  )
+  
+  ####### Downloading SIAF Plot as file
+  output$downloadGraphSIAF <- downloadHandler(
+    
+    filename = function() {
+      paste(TitleSIAF(), ".png", sep = "")
+    },
+    content = function(file) {
+      png(file)
+      print({plotInputSIAF()})
       dev.off()
     }
   )
