@@ -35,7 +35,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                 navbarPage(
                   theme = "united",
                   "Senegal Data Visualization",
-                  tabPanel("Instructions"),
+                  
                   tabPanel("Visualization",
                            ####### Sidebar Panel
                            sidebarPanel(
@@ -46,6 +46,11 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           uiOutput("yearmap")
                                                           ),
                                          conditionalPanel(condition = "input.tabselected==2",
+                                                          uiOutput("selectfgraphSIAF"),
+                                                          uiOutput("selectplacesSIAF"),
+                                                          uiOutput("yearSIAF")
+                                                          ),
+                                         conditionalPanel(condition = "input.tabselected==3",
                                                           ####### Place for select to insert which graph you want to visualize
                                                           uiOutput("selectgraph"),
                                                           ####### Place for select to insert which data will be visualized in graphs
@@ -53,12 +58,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           ####### Place for select to insert which places they want to compare on graphs
                                                           uiOutput("selectplaces"),
                                                           uiOutput("yearplot")
-                                                        ),
-                                         conditionalPanel(condition = "input.tabselected==3",
-                                                          uiOutput("selectfgraphSIAF"),
-                                                          uiOutput("selectplacesSIAF"),
-                                                          uiOutput("yearSIAF")
-                                                          ),
+                                                        )
                                         ),
                            ####### Main Panel
                            mainPanel(
@@ -69,17 +69,17 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                            textOutput("maptxt"),
                                                            ####### Showing map
                                                            leafletOutput("mymap"),
-                                                           img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px"),
-                                                           
+                                                           img(id="image", src = "north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
                                                   ),
                                                  tabPanel("SIAF",
-                                                          value=3,
+                                                          value=2,
                                                           textOutput("plottxtSIAF"),
                                                           ####### Ploting graph
                                                           plotOutput("graphSIAF"),
-                                                          downloadButton("downloadGraphSIAF", "Download Plot")),
+                                                          downloadButton("downloadGraphSIAF", "Download Plot")
+                                                  ),
                                                   tabPanel("Graphs",
-                                                           value=2,
+                                                           value=3,
                                                            textOutput("plottxt"),
                                                            ####### Ploting graph
                                                            plotOutput("graph"),
@@ -89,13 +89,13 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                     )
                            
                         ),
+                  tabPanel("Instructions"),
                   tabPanel("Data", 
                            ####### Rendering the table of data user uploaded
                             tags$h2("This is the raw data: "),
                             downloadButton("downloadData", "Download"),
                             dataTableOutput("dataInput")
                            ),
-
                   tabPanel("About", 
                            includeHTML("About.html")
                           )
@@ -200,7 +200,7 @@ server <- function(input, output, session) {
       group_by(Year = eval(parse(text = year)))
     minimo <- min(choice$Year)
     maximo <- max(choice$Year)
-    sliderInput("year",
+    sliderInput("yearmap",
                 "Choose the mean between below years or one year:",
                 min = minimo,
                 max = maximo,
@@ -218,7 +218,7 @@ server <- function(input, output, session) {
         group_by(Year = eval(parse(text = year)))
       minimo <- min(choice$Year)
       maximo <- max(choice$Year)
-      sliderInput("year",
+      sliderInput("yearplot",
                   "Choose the mean between below years or one year:",
                   min = minimo,
                   max = maximo,
@@ -236,7 +236,7 @@ server <- function(input, output, session) {
         group_by(Year = eval(parse(text = year)))
       minimo <- min(choice$Year)
       maximo <- max(choice$Year)
-      sliderInput("year",
+      sliderInput("yearSIAF",
                   "Choose the mean between below years or one year:",
                   min = minimo,
                   max = maximo,
@@ -374,18 +374,18 @@ server <- function(input, output, session) {
   TitleMap <- reactive({
     str2 = input$select
     str3 = " from "
-    str4 = input$year[1]
+    str4 = input$yearmap[1]
     str5 = " to "
-    str6 = input$year[2]
+    str6 = input$yearmap[2]
     str1 = " of "
     
-    if (input$year[1] != input$year[2]){
+    if (input$yearmap[1] != input$yearmap[2]){
       
       result = paste(str2,str3,str4,str5,str6)
       
     }
     
-    else if(input$year[1] == input$year[2]){
+    else if(input$yearmap[1] == input$yearmap[2]){
       
       result = paste(str2,str1,str4)
       
