@@ -1,6 +1,6 @@
 #################################################################
 # Author: SANTIAGO, Gustavo N.                                  #
-# Coauthors: CARCEDO, Ana; CORRENDO, Adrian; CIAMPITTI, Ignacio #
+# Coauthors: CARCEDO, Ana; CIAMPITTI, Ignacio; BROWN, Molly E.  #
 #################################################################
 
 # Loading R packages
@@ -46,6 +46,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           uiOutput("yearmap")
                                                           ),
                                          conditionalPanel(condition = "input.tabselected==2",
+                                                          uiOutput("placeoryearSIAF"),
                                                           uiOutput("selectfgraphSIAF"),
                                                           uiOutput("selectplacesSIAF"),
                                                           uiOutput("yearSIAF")
@@ -112,14 +113,36 @@ server <- function(input, output, session) {
                    subset(placeBase,select = -c(1,2)))
   })
   
+  ####### Creating the place where user selects if he/she wants to compare different districts in years or the same district in different years
+  output$placeoryearSIAF <- renderUI({
+    
+    radioButtons("placeoryearSIAF",
+                 "Compare different districts in years or the same district in different years",
+                 choices = c("Multiple Districts" = "MD",
+                             "Same District" = "SD")
+    )
+    
+  })
+  
   ####### Creating Dropdown for graph type
   output$selectgraph <- renderUI({
-    selectInput("selectgraph",
-                "Type of graph:",
-                choices = c("Bar Graph" = "Bar Graph",
-                            "Correlation Graph" = "Correlation Graph",
-                            "Line Graph" = "Line Graph")
-    )
+    
+    if(input$placeoryear == "MD"){
+        selectInput("selectgraph",
+                    "Type of graph:",
+                    choices = c("Bar Graph" = "Bar Graph",
+                                "Correlation Graph" = "Correlation Graph",
+                                "Line Graph" = "Line Graph")
+        )
+    }
+    else if(input$placeoryear == "SD"){
+      selectInput("selectgraph",
+                  "Type of graph:",
+                  choices = c("Bar Graph" = "Bar Graph",
+                              "Line Graph" = "Line Graph")
+      )
+    }
+  
   })
   
   ####### Creating Dropdown for data to be ploted on graph
@@ -145,7 +168,6 @@ server <- function(input, output, session) {
     
   })
   
-  ####### Creating Dropdown for data to be ploted on graph in SIAF
   output$selectfgraphSIAF <- renderUI({
     
     varSelectizeInput("selectfgraphSIAF",
@@ -163,31 +185,40 @@ server <- function(input, output, session) {
       group_by(States = eval(parse(text = place)))
     
     if(input$selectgraph == "Correlation Graph"){
-      selectInput("selectplaces",
-                  "Places you want to visualize on graph:",
-                  choice$States)
+        selectInput("selectplaces",
+                    "Places you want to visualize on graph:",
+                    choice$States)
     }
+    
     else if (input$selectgraph != "Correlation Graph"){
-      selectizeInput("selectplaces",
-                  "Places you want to visualize on graph:",
-                  choice$States,
-                  multiple = TRUE,
-                  options = list(maxItems = 10))
-    }
+        selectizeInput("selectplaces",
+                    "Places you want to visualize on graph:",
+                    choice$States,
+                    multiple = TRUE,
+                    options = list(maxItems = 10))
+      }
     
   })
   
-  ####### Creating Dropdown for places to plot on graph in SIAF
   output$selectplacesSIAF <- renderUI({
     place <- toString(names(subset(placeBase, select = c(1))))
     choice <- placeBase %>%
-      group_by(States = eval(parse(text = place)))
+       group_by(States = eval(parse(text = place)))
     
-    selectizeInput("selectplacesSIAF",
-                   "Places you want to visualize on graph:",
-                   choice$States,
-                   multiple = TRUE,
-                   options = list(maxItems = 10))
+    if(input$placeoryearSIAF == "MD"){
+      
+      selectizeInput("selectplacesSIAF",
+                     "Places you want to visualize on graph:",
+                     choice$States,
+                     multiple = TRUE,
+                     options = list(maxItems = 10))
+    }
+    
+    else if(input$placeoryearSIAF == "SD"){
+      selectInput("selectplacesSIAF",
+                     "Place you want to visualize on graph:",
+                     choice$States)
+    }
     
   })
   
@@ -211,20 +242,24 @@ server <- function(input, output, session) {
   
   output$yearplot <- renderUI({
     
+    year <- toString(names(subset(placeBase, select = c(2))))
+    choice <- placeBase %>%
+          group_by(Year = eval(parse(text = year)))
+    minimo <- min(choice$Year)
+    maximo <- max(choice$Year)
+        
+      
     if(input$selectgraph != "Correlation Graph"){
-      year <- toString(names(subset(placeBase, select = c(2))))
-      choice <- placeBase %>%
-        group_by(Year = eval(parse(text = year)))
-      minimo <- min(choice$Year)
-      maximo <- max(choice$Year)
-      sliderInput("yearplot",
-                  "Choose the mean between below years or one year:",
-                  min = minimo,
-                  max = maximo,
-                  value = c(minimo, maximo),
-                  step = 1,
-                  sep = "")
-    }
+        
+        
+        sliderInput("yearplot",
+                    "Choose the mean between below years or one year:",
+                    min = minimo,
+                    max = maximo,
+                    value = c(minimo, maximo),
+                    step = 1,
+                    sep = "")
+      }
     
   })
   
@@ -235,14 +270,28 @@ server <- function(input, output, session) {
         group_by(Year = eval(parse(text = year)))
       minimo <- min(choice$Year)
       maximo <- max(choice$Year)
-      sliderInput("yearSIAF",
-                  "Choose the mean between below years or one year:",
-                  min = minimo,
-                  max = maximo,
-                  value = c(minimo, maximo),
-                  step = 1,
-                  sep = "")
-    
+     
+      if(input$placeoryearSIAF == "MD"){
+        sliderInput("yearSIAF",
+                    "Choose the mean between below years or one year:",
+                    min = minimo,
+                    max = maximo,
+                    value = c(minimo, maximo),
+                    step = 1,
+                    sep = "")
+      }
+      
+      else if(input$placeoryearSIAF == "SD"){
+        
+        selectizeInput("yearSIAF",
+                       "Choose years you want to compare",
+                       choice$Year,
+                       multiple = TRUE,
+                       options = list(maxItems = 10)
+        )
+        
+      }
+      
   })
   
   ####### Filtering data for map
@@ -267,38 +316,40 @@ server <- function(input, output, session) {
     place <- toString(names(subset(placeBase, select = c(1))))
     period <- toString(names(subset(placeBase, select = c(2))))
     
-    if (input$selectgraph == "Bar Graph"){
       
-        choiceG <- toString(input$selectfgraph)
+    if (input$selectgraph == "Bar Graph"){
+        
+          choiceG <- toString(input$selectfgraph)
+          placeBase %>%
+            filter(eval(parse(text = place)) %in% input$selectplaces,
+                   between(eval(parse(text = period)), input$yearplot[1], input$yearplot[2])) %>%
+            group_by(Places = eval(parse(text = place))) %>%
+            summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE)) 
+        
+    }
+      
+    else if (input$selectgraph == "Correlation Graph"){
+        
+        choicesD <- as.character(input$selectfgraph)
+        
+        placeBase %>%
+          filter(eval(parse(text = place)) %in% input$selectplaces) %>%
+          group_by(Places = eval(parse(text = place))) %>%
+          select_at(vars(choicesD))
+        
+    }
+      
+    else if(input$selectgraph == "Line Graph"){
+        
+        choicesD <- as.character(input$selectfgraph)
+        
         placeBase %>%
           filter(eval(parse(text = place)) %in% input$selectplaces,
                  between(eval(parse(text = period)), input$yearplot[1], input$yearplot[2])) %>%
-          group_by(Places = eval(parse(text = place))) %>%
-          summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE)) 
-      
-    }
-    
-    else if (input$selectgraph == "Correlation Graph"){
-      
-      choicesD <- as.character(input$selectfgraph)
-      
-      placeBase %>%
-        filter(eval(parse(text = place)) %in% input$selectplaces) %>%
-        group_by(Places = eval(parse(text = place))) %>%
-        select_at(vars(choicesD))
-      
-    }
-    
-    else if(input$selectgraph == "Line Graph"){
-      
-      choicesD <- as.character(input$selectfgraph)
-      
-      placeBase %>%
-        filter(eval(parse(text = place)) %in% input$selectplaces,
-               between(eval(parse(text = period)), input$yearplot[1], input$yearplot[2])) %>%
-        group_by(Year = eval(parse(text = period)),
-                 Places = eval(parse(text = place))) %>%
-        select(Data = choicesD)
+          group_by(Year = eval(parse(text = period)),
+                   Places = eval(parse(text = place))) %>%
+          select(Data = choicesD)
+        
     }
     
   })
@@ -310,13 +361,29 @@ server <- function(input, output, session) {
     
     choicesD <- as.character(input$selectfgraphSIAF)
     
-    placeBase %>%
-      filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-             between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
-      group_by(Places = eval(parse(text = place))) %>%
-      summarise_at(vars(choicesD), mean, na.rm=TRUE) %>%
-      ungroup() %>%
-      mutate_at(vars(-Places), scales::rescale)
+    if(input$placeoryearSIAF == "MD"){
+      
+      placeBase %>%
+          filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+                 between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+          group_by(Places = eval(parse(text = place))) %>%
+          summarise_at(vars(choicesD), mean, na.rm=TRUE) %>%
+          ungroup() %>%
+          mutate_at(vars(-Places), scales::rescale)
+      
+    }
+    
+    else if(input$placeoryearSIAF == "SD"){
+      
+      placeBase %>%
+        filter(eval(parse(text = place)) == input$selectplacesSIAF,
+               eval(parse(text = period)) %in% input$yearSIAF) %>%
+        group_by(Years = eval(parse(text = period))) %>%
+        summarise_at(vars(choicesD), mean, na.rm=TRUE) %>%
+        ungroup() %>%
+        mutate_at(vars(-Years), scales::rescale)
+      
+    }
     
   })
   
@@ -502,18 +569,30 @@ server <- function(input, output, session) {
     str5 = " to "
     str6 = input$yearSIAF[2]
     str1 = " of "
+    str8 = input$selectplacesSIAF
     
-    if (input$yearSIAF[1] != input$yearSIAF[2]){
+    if(input$placeoryearSIAF == "MD"){
       
-      result = paste(str2,str1,str7,str3,str4,str5,str6)
+      if (input$yearSIAF[1] != input$yearSIAF[2]){
+        
+        result = paste(str2,str1,str7,str3,str4,str5,str6)
+        
+      }
+      
+      else if(input$yearSIAF[1] == input$yearSIAF[2]){
+        
+        result = paste(str2,str1,str7,str1,str4)
+        
+      }
       
     }
     
-    else if(input$yearSIAF[1] == input$yearSIAF[2]){
+    else if(input$placeoryearSIAF == "SD"){
       
-      result = paste(str2,str1,str7,str1,str4)
+      result = paste(str2,str1,str7,str3,str8)
       
     }
+    
   })
   
   ###### Text to appear above the graph
@@ -557,7 +636,7 @@ server <- function(input, output, session) {
   )
   
   ####### Summarizing data input
-  output$dataInput <- renderDataTable(placeBase)
+  output$dataInput <- renderDataTable(dataInputGraphSIAF())
   
   ####### Downloading Table as file
   output$downloadData <- downloadHandler(
