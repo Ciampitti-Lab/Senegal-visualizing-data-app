@@ -35,7 +35,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                 navbarPage(
                   theme = "united",
                   "Senegal Data Visualization",
-                  
+                  tabPanel("Instructions"),
                   tabPanel("Visualization",
                            ####### Sidebar Panel
                            sidebarPanel(
@@ -89,7 +89,6 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                     )
                            
                         ),
-                  tabPanel("Instructions"),
                   tabPanel("Data", 
                            ####### Rendering the table of data user uploaded
                             tags$h2("This is the raw data: "),
