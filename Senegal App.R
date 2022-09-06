@@ -335,6 +335,8 @@ server <- function(input, output, session) {
   ####### Creating map
   map <- reactive({
     
+    titulo <- toString(input$select)
+    
     leaflet(width = 200, height = 300) %>%
       addTiles() %>%
       addPolygons( data = places,
@@ -353,7 +355,8 @@ server <- function(input, output, session) {
       addLegend(pal = palette(),
                 values = dataInput()$Data,
                 opacity = 0.7,
-                position = "bottomright") %>%
+                position = "bottomright",
+                title = titulo) %>%
       
       addEasyprint(options = easyprintOptions(position = "topright",
                                               exportOnly=TRUE,
