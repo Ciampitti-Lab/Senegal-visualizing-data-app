@@ -86,3 +86,11 @@ body{
     text-align: center;
     color: #ffffff
 }
+#mymap{
+    position:relative
+}
+#image{
+    position:absolute;
+    bottom: 5px;
+    left: 10 px
+}

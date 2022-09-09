@@ -135,6 +135,7 @@ server <- function(input, output, session) {
                                 "Line Graph" = "Line Graph")
         )
     }
+    
     else if(input$placeoryear == "SD"){
       selectInput("selectgraph",
                   "Type of graph:",
@@ -507,7 +508,7 @@ server <- function(input, output, session) {
     dataInputGraphSIAF() %>%
       ggradar(
         font.radar = "roboto",
-        grid.label.size = 0,  
+        grid.label.size = 8,  
         axis.label.size = 5, 
         group.point.size = 3   
       ) + 
@@ -636,7 +637,7 @@ server <- function(input, output, session) {
   )
   
   ####### Summarizing data input
-  output$dataInput <- renderDataTable(dataInputGraphSIAF())
+  output$dataInput <- renderDataTable(placeBase)
   
   ####### Downloading Table as file
   output$downloadData <- downloadHandler(
