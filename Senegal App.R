@@ -127,22 +127,12 @@ server <- function(input, output, session) {
   ####### Creating Dropdown for graph type
   output$selectgraph <- renderUI({
     
-    if(input$placeoryear == "MD"){
-        selectInput("selectgraph",
+    selectInput("selectgraph",
                     "Type of graph:",
                     choices = c("Bar Graph" = "Bar Graph",
                                 "Correlation Graph" = "Correlation Graph",
                                 "Line Graph" = "Line Graph")
-        )
-    }
-    
-    else if(input$placeoryear == "SD"){
-      selectInput("selectgraph",
-                  "Type of graph:",
-                  choices = c("Bar Graph" = "Bar Graph",
-                              "Line Graph" = "Line Graph")
-      )
-    }
+    )
   
   })
   
@@ -156,12 +146,7 @@ server <- function(input, output, session) {
                      multiple = TRUE,
                      options = list(maxItems = 10))
     }
-    else if(input$selectgraph == "Bar Graph"){
-      varSelectInput("selectfgraph",
-                     "Data you want to visualize on graph:",
-                     subset(placeBase,select = -c(1,2)))
-    }
-    else if(input$selectgraph == "Line Graph"){
+    else if(input$selectgraph != "Correlation Graph"){
       varSelectInput("selectfgraph",
                      "Data you want to visualize on graph:",
                      subset(placeBase,select = -c(1,2)))
@@ -430,7 +415,7 @@ server <- function(input, output, session) {
                                               exportOnly=TRUE,
                                               sizeModes = "CurrentSize",
                                               filename = TitleMap()))
-                   
+    
   })
   
   ####### Rendering map
