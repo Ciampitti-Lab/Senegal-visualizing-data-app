@@ -19,6 +19,7 @@ library(psych)
 library(shapefiles)
 library(ggradar)
 library(ggcorrplot)
+library(plotly)
 
 
 ####### Reading ShapeFile of Senegal's administrative districts
@@ -76,14 +77,14 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           value=2,
                                                           textOutput("plottxtSIAF"),
                                                           ####### Ploting graph
-                                                          plotOutput("graphSIAF"),
+                                                          plotlyOutput("graphSIAF"),
                                                           downloadButton("downloadGraphSIAF", "Download Plot")
                                                   ),
                                                   tabPanel("Graphs",
                                                            value=3,
                                                            textOutput("plottxt"),
                                                            ####### Ploting graph
-                                                           plotOutput("graph"),
+                                                           plotlyOutput("graph"),
                                                            downloadButton("downloadGraph", "Download Plot")
                                                   )
                                                 )
@@ -487,6 +488,13 @@ server <- function(input, output, session) {
     
   })
   
+  ####### Rendering Plots
+  output$graph <- renderPlotly({
+    
+   ggplotly(plotInput())
+    
+  })
+  
   ####### Creating Plots for SIAF
   plotInputSIAF <- reactive({
     
@@ -507,17 +515,10 @@ server <- function(input, output, session) {
     
   })
   
-  ####### Rendering Plots
-  output$graph <- renderPlot({
-    
-   plotInput()
-    
-  })
-  
   ####### Rendering SIAF Plots
-  output$graphSIAF <- renderPlot({
+  output$graphSIAF <- renderPlotly({
     
-    plotInputSIAF()
+    ggplotly(plotInputSIAF())
     
   })
   
