@@ -457,6 +457,7 @@ server <- function(input, output, session) {
   
   ####### Creating Plots
   plotInput <- reactive({
+    choiceD <- toString(input$selectfgraph)
     
     if (input$selectgraph == "Bar Graph"){
       ggplot(dataInputGraph(), aes(x=Places, y=Data))+
@@ -466,7 +467,8 @@ server <- function(input, output, session) {
           panel.background = element_rect(fill = "#c7c7c9",
                                           colour = "#c7c7c9",
                                           size = 0.5, linetype = "solid")
-        )
+        )+
+        labs(y = choiceD)
     }
     
     else if(input$selectgraph == "Correlation Graph"){
@@ -483,7 +485,8 @@ server <- function(input, output, session) {
     else if(input$selectgraph == "Line Graph"){
       ggplot(dataInputGraph(), aes(x = Year, y = Data, color = Places)) +
         geom_line()+
-        theme(panel.background = element_rect(fill = "#c7c7c9"))
+        theme(panel.background = element_rect(fill = "#c7c7c9"))+
+        labs(y = choiceD)
     }
     
   })
