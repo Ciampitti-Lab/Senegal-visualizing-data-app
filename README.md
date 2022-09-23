@@ -1,4 +1,4 @@
-# Senegal-visualizing-data-app
+# Senegal Visualizing Data App
 
 App made with R computer language and Shiny framework to visualize and compare SIAF information about Senegal.
 
