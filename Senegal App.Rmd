@@ -1,0 +1,101 @@
+---
+title: "Senegal Data Visualization"
+output: 
+  flexdashboard::flex_dashboard:
+        orientation: columns
+        navbar:
+           - { icon: "", href: "https://www.siildigitalagconsortium.com/", align: right }
+        theme:
+            bg: "#c7c7c9"
+            fg: "#253659"
+            primary: "#253659"
+            navbar-bg: "#03A696"
+            base_font: "Ruda"
+        vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(shiny)
+library(leaflet)
+library(leaflet.extras2)
+library(mapview)
+library(scales)
+library(rgdal)
+library(dplyr)
+library(htmltools)
+library(ggplot2)
+library(RColorBrewer)
+library(fmsb)
+library(psych)
+library(shapefiles)
+library(ggradar)
+library(ggcorrplot)
+library(plotly)
+tags$style("@import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda');
+           .shiny-output-error { visibility: hidden; },
+           .shiny-output-error:before { visibility: hidden; }")
+```
+
+```{r}
+####### Reading ShapeFile of Senegal's administrative districts
+#places <- readOGR("zonal_stats.shp")
+
+####### Reading Data
+
+```
+
+# Instructions
+
+# Visualization
+
+SideBar {.sidebar}
+---------------------------------------------------------------
+
+```{r}
+conditionalPanel(condition = "input.tabselected==1",
+                  uiOutput("select"),
+                  uiOutput("yearmap")
+                )
+conditionalPanel(condition = "input.tabselected==2",
+                 uiOutput("placeoryearSIAF"),
+                 uiOutput("selectfgraphSIAF"),
+                 uiOutput("selectplacesSIAF"),
+                 uiOutput("yearSIAF")
+                )
+conditionalPanel(condition = "input.tabselected==3",
+                 uiOutput("selectgraph"),
+                 uiOutput("selectfgraph"),
+                 uiOutput("selectplaces"),
+                 uiOutput("yearplot")
+                )
+```
+
+Outputs {data-width=1000}
+---------------------------------------------------------------
+
+```{r}
+tabsetPanel(type = "tabs",
+            id = "tabselected",
+            tabPanel("Map",
+                     value=1,
+                     textOutput("maptxt"),
+                     leafletOutput("mymap"),
+                     img(id="image", src = "../www/north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
+                     ),
+            tabPanel("SIAF",
+                     value=2,
+                     textOutput("plottxtSIAF"),
+                     plotlyOutput("graphSIAF"),
+                     downloadButton("downloadGraphSIAF", "Download Plot")
+                    ),
+            tabPanel("Graphs",
+                     value=3,
+                     textOutput("plottxt"),
+                     plotlyOutput("graph"),
+                     downloadButton("downloadGraph", "Download Plot")
+                    )
+         )
+```
+
+

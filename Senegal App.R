@@ -23,32 +23,38 @@ library(plotly)
 
 
 ####### Reading ShapeFile of Senegal's administrative districts
-places <- readOGR("zonal_stats.shp")
+places <- readOGR("Data/zonal_stats.shp")
 
 ####### Reading Data
-placeBase <- read.csv("Test.csv", sep=";", dec=",")
+placeBase <- read.csv("Data/Full Data.csv", sep=",", dec=".")
 
 ####### Define User Interface function (UI)
 ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "theme.css")),
                 tags$style(type="text/css",
                            ".shiny-output-error { visibility: hidden; }",
-                           ".shiny-output-error:before { visibility: hidden; }"),
+                           ".shiny-output-error:before { visibility: hidden; }",
+                           ".selectize-input {height: 10px; width: 300px; font-size: 10px; margin: 3px}"),
                 navbarPage(
                   theme = "united",
                   "Senegal Data Visualization",
                   tabPanel("Instructions"),
                   tabPanel("Visualization",
                            ####### Sidebar Panel
-                           sidebarPanel(
-                                         ####### Place for select to insert which data will be visualized
+                           sidebarPanel(####### Place for select to insert which data will be visualized
                                          conditionalPanel(condition = "input.tabselected==1",
                                                           ####### Place for select to insert which data will be visualized in map
                                                           uiOutput("select"),
                                                           uiOutput("yearmap")
                                                           ),
-                                         conditionalPanel(condition = "input.tabselected==2",
+                                         conditionalPanel(style ="overflow-y:scroll; max-height: 70vh; padding: 10px",
+                                                          condition = "input.tabselected==2",
                                                           uiOutput("placeoryearSIAF"),
-                                                          uiOutput("selectfgraphSIAF"),
+                                                          h6("Select what data you want to visualize on radar plot:"),
+                                                          uiOutput("productivity"),
+                                                          uiOutput("economic"),
+                                                          #uiOutput("environmental"),
+                                                          uiOutput("human"),
+                                                          uiOutput("social"),
                                                           uiOutput("selectplacesSIAF"),
                                                           uiOutput("yearSIAF")
                                                           ),
@@ -63,7 +69,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                         )
                                         ),
                            ####### Main Panel
-                           mainPanel(
+                           mainPanel(style ="max-height: 100vh",
                                      tabsetPanel(type = "tabs",
                                                   id = "tabselected",
                                                   tabPanel("Map",
@@ -117,8 +123,8 @@ server <- function(input, output, session) {
   ####### Creating the place where user selects if he/she wants to compare different districts in years or the same district in different years
   output$placeoryearSIAF <- renderUI({
     
-    radioButtons("placeoryearSIAF",
-                 "Compare different districts in years or the same district in different years",
+    selectInput("placeoryearSIAF",
+                 h6("Compare different districts in years or the same district in different years"),
                  choices = c("Multiple Districts" = "MD",
                              "Same District" = "SD")
     )
@@ -155,16 +161,55 @@ server <- function(input, output, session) {
     
   })
   
-  output$selectfgraphSIAF <- renderUI({
+  output$productivity <- renderUI({
     
-    varSelectizeInput("selectfgraphSIAF",
-                      "Data you want to visualize on graph:",
-                      subset(placeBase,select = -c(1,2)),
+    varSelectizeInput("productivity",
+                      h6("Productivity"),
+                      subset(placeBase,select = c(3:14)),
                       multiple = TRUE,
-                      options = list(maxItems = 10))
+                      options = list(maxItems = 2))
     
   })
   
+  output$economic <- renderUI({
+    
+    varSelectizeInput("economic",
+                      h6("Economic"),
+                      subset(placeBase,select = c(15:33)),
+                      multiple = TRUE,
+                      options = list(maxItems = 2))
+    
+  })
+  
+  # output$environmental <- renderUI({
+  #   
+  #   varSelectizeInput("environmental",
+  #                     h6("Environmental"),
+  #                     subset(placeBase,select = -c(1,2)),
+  #                     multiple = TRUE,
+  #                     options = list(maxItems = 2))
+  #   
+  # })
+  
+  output$human <- renderUI({
+    
+    varSelectizeInput("human",
+                      h6("Human"),
+                      subset(placeBase,select = c(34:49)),
+                      multiple = TRUE,
+                      options = list(maxItems = 2))
+    
+  })
+  
+  output$social <- renderUI({
+    
+    varSelectizeInput("social",
+                      h6("Social"),
+                      subset(placeBase,select = c(50:62)),
+                      multiple = TRUE,
+                      options = list(maxItems = 2))
+    
+  })
   ####### Creating Dropdown for places to plot on graph
   output$selectplaces <- renderUI({
     place <- toString(names(subset(placeBase, select = c(1))))
@@ -173,13 +218,13 @@ server <- function(input, output, session) {
     
     if(input$selectgraph == "Correlation Graph"){
         selectInput("selectplaces",
-                    "Places you want to visualize on graph:",
+                    h6("Places you want to visualize on graph:"),
                     choice$States)
     }
     
     else if (input$selectgraph != "Correlation Graph"){
         selectizeInput("selectplaces",
-                    "Places you want to visualize on graph:",
+                    h6("Places you want to visualize on graph:"),
                     choice$States,
                     multiple = TRUE,
                     options = list(maxItems = 10))
@@ -195,7 +240,7 @@ server <- function(input, output, session) {
     if(input$placeoryearSIAF == "MD"){
       
       selectizeInput("selectplacesSIAF",
-                     "Places you want to visualize on graph:",
+                     h6("Places you want to visualize on graph:"),
                      choice$States,
                      multiple = TRUE,
                      options = list(maxItems = 10))
@@ -203,7 +248,7 @@ server <- function(input, output, session) {
     
     else if(input$placeoryearSIAF == "SD"){
       selectInput("selectplacesSIAF",
-                     "Place you want to visualize on graph:",
+                     h6("Place you want to visualize on graph:"),
                      choice$States)
     }
     
@@ -260,7 +305,7 @@ server <- function(input, output, session) {
      
       if(input$placeoryearSIAF == "MD"){
         sliderInput("yearSIAF",
-                    "Choose the mean between below years or one year:",
+                    h6("Choose the mean between below years or one year:"),
                     min = minimo,
                     max = maximo,
                     value = c(minimo, maximo),
@@ -322,6 +367,7 @@ server <- function(input, output, session) {
         placeBase %>%
           filter(eval(parse(text = place)) %in% input$selectplaces) %>%
           group_by(Places = eval(parse(text = place))) %>%
+          na.omit()%>%
           select_at(vars(choicesD))
         
     }
@@ -381,8 +427,9 @@ server <- function(input, output, session) {
   
   ####### Creating the information that appears when mouse-over
   labels <- reactive({
-    paste("<p>", dataInput()$Districts, "<p>",
-          "<p>", round(dataInput()$Data, digits = 2), "<p>",
+    titulo <- toString(input$select)
+    paste("<p>", dataInput()$Districts, "<p>", 
+          "<p>", titulo, ": ", round(dataInput()$Data, digits = 2), "<p>",
           sep ="")
   })
   
