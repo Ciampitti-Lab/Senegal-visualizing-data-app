@@ -11,51 +11,51 @@ Chickens,number of heads
 Assins,number of heads
 Cows,number of heads
 Goats,number of heads
-Percentage of Lower quintiles households,%
-Percentage of Upper quintiles households,%
-Gini coefficient,
-Retail price of imported product_Maize,FCFA/kg
-Retail price of imported product_Imported plain breeze rice,FCFA/kg
-Retail price of imported product_Imported fragrant breeze rice,FCFA/kg
-Retail price of local product_Peanut kernels,FCFA/kg
-Retail price of local product_Unshelled peanut,FCFA/kg
-Retail price of local product_Maize,FCFA/kg
-Retail price of local product_Millet,FCFA/kg
-Retail price of local product_Cowpea,FCFA/kg
-Retail price of local product_Sorghum,FCFA/kg
-Producer price_Local husked rice,FCFA/kg
-Producer price_Unshelled peanut,FCFA/kg
-Producer price_Millet,FCFA/kg
-Producer price_Sorghum,FCFA/kg
-Producer price_Shelled peanut,FCFA/kg
-Producer price_Maize,FCFA/kg
-Producer price_Cowpea,FCFA/kg
-Percentage less than -3 ET_Size-for-Age,%
-Percentage less than -2 ET_Size-for-Age,%
-Average reduced centered score (ET)_Size-for-Age,%
-Percentage less than -3 ET_Weight-for-Height,%
-Percentage less than -2 ET_Weight-for-Height,%
-Percentage less than +2 ET_Weight-for-Height,%
-Average reduced centered score (ET)_Weight-for-Height,
-Percentage less than -3 ET_Weight-for-Age,%
-Percentage less than -2 ET_Weight-for-Age,%
-Percentage less than +2 ET_Weight-for-Age,%
-Average reduced centered score (ET)_Weight-for-Age,
-Neonatal mortality,%
-Post-neonatal mortality,%
-Child mortality,%
-Juvenile mortality,%
-Child-juvenile mortality ,%
+Percentage.of.Lower.quintiles.households,%
+Percentage.of.Upper.quintiles.households,%
+Gini.coefficient,
+Retail.price.of.imported.product_Maize,FCFA/kg
+Retail.price.of.imported.product_Imported.plain.breeze.rice,FCFA/kg
+Retail.price.of.imported.product_Imported.fragrant.breeze.rice,FCFA/kg
+Retail.price.of.local.product_Peanut.kernels,FCFA/kg
+Retail.price.of.local.product_Unshelled.peanut,FCFA/kg
+Retail.price.of.local.product_Maize,FCFA/kg
+Retail.price.of.local.product_Millet,FCFA/kg
+Retail.price.of.local.product_Cowpea,FCFA/kg
+Retail.price.of.local.product_Sorghum,FCFA/kg
+Producer.price_Local.husked.rice,FCFA/kg
+Producer.price_Unshelled.peanut,FCFA/kg
+Producer.price_Millet,FCFA/kg
+Producer.price_Sorghum,FCFA/kg
+Producer.price_Shelled.peanut,FCFA/kg
+Producer.price_Maize,FCFA/kg
+Producer.price_Cowpea,FCFA/kg
+Percentage.less.than.-3.ET_Size-for-Age,%
+Percentage.less.than.-2.ET_Size-for-Age,%
+Average.reduced.centered.score.(ET)_Size-for-Age,%
+Percentage.less.than.-3.ET_Weight-for-Height,%
+Percentage.less.than.-2.ET_Weight-for-Height,%
+Percentage.less.than.+2.ET_Weight-for-Height,%
+Average.reduced.centered.score.(ET)_Weight-for-Height,
+Percentage.less.than.-3.ET_Weight-for-Age,%
+Percentage.less.than.-2.ET_Weight-for-Age,%
+Percentage.less.than.+2.ET_Weight-for-Age,%
+Average.reduced.centered.score.(ET)_Weight-for-Age,
+Neonatal.mortality,%
+Post-neonatal.mortality,%
+Child.mortality,%
+Juvenile.mortality,%
+Child-juvenile.mortality,%
 Electricity,%
-Time to get to water,min
-Wealth factor,
-Household heads without formal education,%
-Literacy rate of household heads,%
-Female head of household,%
-Female Entrepreneurship Index,%
-Household using insecticide,%
-Households having practiced irrigation,%
-Households having practiced animal husbandry,%
-Average household size,units
-Households using NPK,%
-Households using herbicide,%
+Time.to.get.to.water,min
+Wealth.factor,
+Household.heads.without.formal.education,%
+Literacy.rate.of.household.heads,%
+Female.head.of.household,%
+Female.Entrepreneurship.Index,%
+Household.using.insecticide,%
+Households.having.practiced.irrigation,%
+Households.having.practiced.animal.husbandry,%
+Average.household.size,units
+Households.using.NPK,%
+Households.using.herbicide,%

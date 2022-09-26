@@ -32,9 +32,7 @@ library(shapefiles)
 library(ggradar)
 library(ggcorrplot)
 library(plotly)
-tags$style("@import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda');
-           .shiny-output-error { visibility: hidden; },
-           .shiny-output-error:before { visibility: hidden; }")
+tags$style("@import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda')")
 ```
 
 ```{r}
@@ -81,19 +79,17 @@ tabsetPanel(type = "tabs",
                      value=1,
                      textOutput("maptxt"),
                      leafletOutput("mymap"),
-                     img(id="image", src = "../www/north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
+                     img(id="image", src = "www/north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
                      ),
             tabPanel("SIAF",
                      value=2,
                      textOutput("plottxtSIAF"),
-                     plotlyOutput("graphSIAF"),
-                     downloadButton("downloadGraphSIAF", "Download Plot")
+                     plotlyOutput("graphSIAF")
                     ),
             tabPanel("Graphs",
                      value=3,
                      textOutput("plottxt"),
-                     plotlyOutput("graph"),
-                     downloadButton("downloadGraph", "Download Plot")
+                     plotlyOutput("graph")
                     )
          )
 ```
