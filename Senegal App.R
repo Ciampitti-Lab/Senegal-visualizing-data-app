@@ -20,6 +20,7 @@ library(shapefiles)
 library(ggradar)
 library(ggcorrplot)
 library(plotly)
+library(reshape2)
 
 places <- readOGR("Data/zonal_stats.shp")
 
@@ -59,6 +60,7 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                         ),
                                          conditionalPanel(condition = "input.tabselected==4",
                                                           uiOutput("placeCor"),
+                                                          uiOutput("yearCor"),
                                                           uiOutput("dataCor")
                                                         ),
                                          conditionalPanel(condition = "input.tabselected==5",
@@ -81,17 +83,17 @@ ui <- fluidPage(tags$head(tags$link(rel = "stylesheet", type = "text/css", href 
                                                           textOutput("plottxtSIAF"),
                                                           plotlyOutput("graphSIAF")
                                                   ),
-                                                  tabPanel("Bar Graph",
+                                                  tabPanel("Bar Chart",
                                                            value=3,
                                                            textOutput("plottxtBar"),
                                                            plotlyOutput("graphBar")
                                                   ),
-                                                 tabPanel("Correlation Graph",
+                                                 tabPanel("Correlation Chart",
                                                           value=4,
                                                           textOutput("plottxtCor"),
                                                           plotlyOutput("graphCor")
                                                  ),
-                                                 tabPanel("Line Graph",
+                                                 tabPanel("Line Chart",
                                                           value=5,
                                                           textOutput("plottxtLine"),
                                                           plotlyOutput("graphLine")
@@ -360,7 +362,8 @@ server <- function(input, output, session) {
         group_by(Places = eval(parse(text = place))) %>%
         summarise_at(vars(choices), mean, na.rm=TRUE) %>%
         ungroup() %>%
-        mutate_at(vars(-Places), scales::rescale)
+        mutate_at(vars(-Places), scales::rescale) %>%
+        mutate_at(vars(-Places), ~coalesce(.,0))
       
     }
     
@@ -372,7 +375,8 @@ server <- function(input, output, session) {
         group_by(Years = eval(parse(text = period))) %>%
         summarise_at(vars(choices), mean, na.rm=TRUE) %>%
         ungroup() %>%
-        mutate_at(vars(-Years), scales::rescale)
+        mutate_at(vars(-Years), scales::rescale)%>%
+        mutate_at(vars(-Years), ~coalesce(.,0))
       
     }
     
@@ -392,7 +396,8 @@ server <- function(input, output, session) {
           legend.justification = c(1, 0),
           legend.text = element_text(size = 8, family = "roboto"),
           legend.key = element_rect(fill = NA, color = NA),
-          legend.background = element_blank()
+          legend.background = element_blank(),
+          axis.text = element_text(size=7, angle=90, vjust=5, hjust=5)
         )
     
     ggplotly(graph)
@@ -511,7 +516,7 @@ server <- function(input, output, session) {
 
   output$plottxtBar <- renderText({
     
-    str2 = "Bar plot"
+    str2 = "Bar Chart"
     str7 = toString(input$dataBar)
     str3 = " from "
     str4 = input$yearBar[1]
@@ -548,11 +553,41 @@ server <- function(input, output, session) {
     
   })
   
+  output$yearCor <- renderUI({
+    
+    year <- toString(names(subset(placeBase, select = c(2))))
+    choice <- placeBase %>%
+      group_by(Year = eval(parse(text = year)))
+    minimo <- min(choice$Year)
+    maximo <- max(choice$Year)
+    
+    sliderInput("yearCor",
+                h6("Choose years below which you want to correlate"),
+                min = minimo,
+                max = maximo,
+                value = c(minimo, maximo),
+                step = 1,
+                sep = "")
+    
+  })
+  
+  filterCor <- reactive({
+    
+    place <- toString(names(subset(placeBase, select = c(1))))
+    period <- toString(names(subset(placeBase, select = c(2))))
+    
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$placeCor,
+             between(eval(parse(text = period)), input$yearCor[1], input$yearCor[2])) %>%
+      select_if(~ !any(is.na(.)))
+    
+  })
+  
   output$dataCor <- renderUI({
     
     varSelectizeInput("dataCor",
                       h6("Select what data you want to correlate: "),
-                      subset(placeBase,select = -c(1,2)),
+                      subset(filterCor(),select = -c(1,2)),
                       multiple = TRUE,
                       options = list(maxItems = 10)
           )
@@ -561,15 +596,13 @@ server <- function(input, output, session) {
   
   dataInputCor <- reactive({
     
-    place <- toString(names(subset(placeBase, select = c(1))))
-    period <- toString(names(subset(placeBase, select = c(2))))
-    choicesD <- as.character(input$selectfgraph)
+    place <- toString(names(subset(filterCor(), select = c(1))))
+    period <- toString(names(subset(filterCor(), select = c(2))))
+    choicesD <- as.character(input$dataCor)
     
-    placeBase %>%
-      filter(eval(parse(text = place)) %in% input$selectplaces) %>%
+    filterCor() %>%
       group_by(Places = eval(parse(text = place)))%>%
-      select_at(vars(choicesD))%>%
-      mutate_all(~coalesce(.,0))
+      select_at(vars(choicesD))
     
   })
   
@@ -579,7 +612,11 @@ server <- function(input, output, session) {
     corGraph[,1] <- NULL
     corr <- round(cor(corGraph), 1)
     
-    corPlot <- ggcorrplot(corr, hc.order = TRUE, type = "lower",lab = TRUE)
+    corPlot <- ggcorrplot(corr, hc.order = TRUE, type = "lower",lab = TRUE, lab_size = 2) +
+      theme(axis.text.x=element_text(size=7, angle=45, vjust=1, hjust=1, 
+                                     margin=margin(-3,0,0,0)),
+            axis.text.y=element_text(size=7, margin=margin(-3,0,0,0)),
+            panel.grid.major=element_blank()) 
     
     ggplotly(corPlot)
     
@@ -591,9 +628,9 @@ server <- function(input, output, session) {
     str1 = " of "
     str7 = toString(input$dataCor)
     str3 = " from "
-    str4 = "2015"
+    str4 = toString(input$yearCor[1])
     str5 = " to "
-    str6 = "2021"
+    str6 = toString(input$yearCor[2])
     
     result = paste(str2,str1,str7,str3,str4,str5,str6)
     

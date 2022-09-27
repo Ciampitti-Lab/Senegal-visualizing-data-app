@@ -4,7 +4,7 @@ output:
   flexdashboard::flex_dashboard:
         orientation: columns
         navbar:
-           - { icon: "", href: "https://www.siildigitalagconsortium.com/", align: right }
+           - { icon: "fa-question-circle", href: "https://www.siildigitalagconsortium.com/", align: right }
         theme:
             bg: "#c7c7c9"
             fg: "#253659"
@@ -32,66 +32,865 @@ library(shapefiles)
 library(ggradar)
 library(ggcorrplot)
 library(plotly)
+library(DT)
 tags$style("@import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda')")
+
 ```
 
 ```{r}
-####### Reading ShapeFile of Senegal's administrative districts
-#places <- readOGR("zonal_stats.shp")
 
-####### Reading Data
+places <- rgdal::readOGR("C:/Users/gsantiago/Documents/K-State/Senegal-visualizing-data-app/Data", "zonal_stats")
+placeBase <- read.csv("Data/Full Data.csv", sep=",", dec=".")
+units <- read.csv("Data/Units.csv", sep = ",", dec = ".")
+economic <- read.csv("Data/Economic.csv", sep = ",", dec = ".")
+social <- read.csv("Data/Social_F.csv", sep = ",", dec = ".")
+human <- read.csv("Data/Human.csv", sep = ",", dec = ".")
+production <- read.csv("Data/Production.csv", sep = ",", dec = ".")
+environment <- read.csv("Data/Environment.csv", sep = ",", dec = ".")
 
 ```
 
 # Instructions
 
+Column {data-width=700}
+----------------------------------------------------
+### Instructions
+
+```{r warning=FALSE}
+
+
+```
 # Visualization
 
-SideBar {.sidebar}
----------------------------------------------------------------
+Inputs{.sidebar data-width=350}
+----------------------------------------------------
 
-```{r}
-conditionalPanel(condition = "input.tabselected==1",
+```{r warning=FALSE}
+####### Map Filter
+
+conditionalPanel(tags$style(type="text/css",
+                 ".shiny-output-error { visibility: hidden; }",
+                 ".shiny-output-error:before { visibility: hidden; }"),
+                  condition = "input.tabselected==1",
                   uiOutput("select"),
                   uiOutput("yearmap")
                 )
-conditionalPanel(condition = "input.tabselected==2",
-                 uiOutput("placeoryearSIAF"),
-                 uiOutput("selectfgraphSIAF"),
-                 uiOutput("selectplacesSIAF"),
-                 uiOutput("yearSIAF")
-                )
-conditionalPanel(condition = "input.tabselected==3",
-                 uiOutput("selectgraph"),
-                 uiOutput("selectfgraph"),
-                 uiOutput("selectplaces"),
-                 uiOutput("yearplot")
-                )
+
+output$select <- renderUI({
+    varSelectInput("select",
+                   "Data you want to visualize on map:",
+                   subset(placeBase,select = -c(1,2)))
+  })
+  
+output$yearmap <- renderUI({
+    
+    year <- toString(names(subset(placeBase, select = c(2))))
+    choice <- placeBase %>%
+      group_by(Year = eval(parse(text = year)))
+    minimo <- min(choice$Year)
+    maximo <- max(choice$Year)
+    sliderInput("yearmap",
+                "Choose the mean between below years or one year:",
+                min = minimo,
+                max = maximo,
+                value = c(minimo, maximo),
+                step = 1,
+                sep = "")
+    
+  })
+
 ```
 
-Outputs {data-width=1000}
----------------------------------------------------------------
+```{r warning=FALSE}
+####### SIAF Filter
 
-```{r}
+conditionalPanel(condition = "input.tabselected==2",
+                uiOutput("placeoryearSIAF"),
+                uiOutput("selectplacesSIAF"),
+                uiOutput("yearSIAF"),
+                h6("Select what data you want to visualize on radar plot:"),
+                uiOutput("productivity"),
+                uiOutput("economic"),
+                uiOutput("environmental"),
+                uiOutput("human"),
+                uiOutput("social")
+                )
+
+output$placeoryearSIAF <- renderUI({
+  
+  selectInput("placeoryearSIAF",
+               h6("Compare different districts in years or the same district in different years"),
+               choices = c("Compare Districts" = "MD",
+                           "Compare Years" = "SD")
+  )
+  
+})
+
+output$selectplacesSIAF <- renderUI({
+  place <- toString(names(subset(placeBase, select = c(1))))
+  choice <- placeBase %>%
+    group_by(States = eval(parse(text = place)))
+  
+  if(input$placeoryearSIAF == "MD"){
+    
+    selectizeInput("selectplacesSIAF",
+                   h6("Places you want to visualize on graph:"),
+                   choice$States,
+                   multiple = TRUE,
+                   options = list(maxItems = 10))
+  }
+  
+  else if(input$placeoryearSIAF == "SD"){
+    selectInput("selectplacesSIAF",
+                h6("Place you want to visualize on graph:"),
+                choice$States)
+  }
+  
+})
+
+output$yearSIAF <- renderUI({
+  
+  year <- toString(names(subset(placeBase, select = c(2))))
+  choice <- placeBase %>%
+    group_by(Year = eval(parse(text = year)))
+  minimo <- min(choice$Year)
+  maximo <- max(choice$Year)
+  
+  if(input$placeoryearSIAF == "MD"){
+    sliderInput("yearSIAF",
+                h6("Choose the mean between below years or one year:"),
+                min = minimo,
+                max = maximo,
+                value = c(minimo, maximo),
+                step = 1,
+                sep = "")
+  }
+  
+  else if(input$placeoryearSIAF == "SD"){
+    
+    selectizeInput("yearSIAF",
+                   h6("Choose years you want to compare"),
+                   choice$Year,
+                   multiple = TRUE,
+                   options = list(maxItems = 10)
+    )
+    
+  }
+  
+})
+
+output$productivity <- renderUI({
+  
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  production_filtered <- production %>%
+        filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+               between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+        select_if(~ !any(is.na(.)))
+  
+  varSelectizeInput("productivity",
+                    h6("Productivity"),
+                    subset(production_filtered, select = -c(1,2)),
+                    multiple = TRUE,
+                    options = list(maxItems = 2))
+  
+})
+
+output$economic <- renderUI({
+  
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  economic_filtered <- economic %>%
+    filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+    select_if(~ !any(is.na(.)))
+  
+  varSelectizeInput("economic",
+                    h6("Economic"),
+                    subset(economic_filtered, select = -c(1,2)),
+                    multiple = TRUE,
+                    options = list(maxItems = 2))
+  
+})
+
+output$environmental <- renderUI({
+
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  environment_filtered <- environment %>%
+    filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+    select_if(~ !any(is.na(.)))
+  
+  varSelectizeInput("environmental",
+                    h6("Environmental"),
+                    subset(environment_filtered, select = -c(1,2)),
+                    multiple = TRUE,
+                    options = list(maxItems = 2))
+
+})
+
+output$human <- renderUI({
+  
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  human_filtered <- human %>%
+    filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+    select_if(~ !any(is.na(.)))
+  
+  varSelectizeInput("human",
+                    h6("Human"),
+                    subset(human_filtered, select = -c(1, 2)),
+                    multiple = TRUE,
+                    options = list(maxItems = 2))
+  
+})
+
+output$social <- renderUI({
+  
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  social_filtered <- social %>%
+    filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+    select_if(~ !any(is.na(.)))
+  
+  varSelectizeInput("social",
+                    h6("Social"),
+                    subset(social_filtered, select = -c(1,2)),
+                    multiple = TRUE,
+                    options = list(maxItems = 2))
+  
+})
+
+```
+
+```{r warning=FALSE}
+####### Bar Filter
+
+conditionalPanel(condition = "input.tabselected==3",
+                uiOutput("placesBar"),
+                uiOutput("yearBar"),
+                uiOutput("dataBar")
+              )
+
+output$placesBar <- renderUI({
+    place <- toString(names(subset(placeBase, select = c(1))))
+    choice <- placeBase %>%
+      group_by(States = eval(parse(text = place)))
+    
+    selectizeInput("placesBar",
+                   h6("Places you want to visualize on graph:"),
+                   choice$States,
+                   multiple = TRUE,
+                   options = list(maxItems = 10))
+    
+  })
+  
+output$yearBar <- renderUI({
+  
+  year <- toString(names(subset(placeBase, select = c(2))))
+  choice <- placeBase %>%
+    group_by(Year = eval(parse(text = year)))
+  minimo <- min(choice$Year)
+  maximo <- max(choice$Year)
+  
+  sliderInput("yearBar",
+              h6("Choose the mean between below years or one year:"),
+              min = minimo,
+              max = maximo,
+              value = c(minimo, maximo),
+              step = 1,
+              sep = "")
+  
+})
+
+output$dataBar <- renderUI({
+  
+  varSelectizeInput("dataBar",
+                    h6("Select what data you want to visualize: "),
+                    subset(placeBase,select = -c(1,2))
+                    )
+  
+})
+
+```
+
+```{r warning=FALSE}
+####### Correlation Filter
+
+conditionalPanel(condition = "input.tabselected==4",
+                uiOutput("placeCor"),
+                uiOutput("yearCor"),
+                uiOutput("dataCor")
+              )
+
+output$placeCor <- renderUI({
+  
+  place <- toString(names(subset(placeBase, select = c(1))))
+  choice <- placeBase %>%
+    group_by(States = eval(parse(text = place)))
+  
+  selectInput("placeCor",
+              h6("Places you want to visualize on graph:"),
+              choice$States)
+  
+})
+
+output$yearCor <- renderUI({
+  
+  year <- toString(names(subset(placeBase, select = c(2))))
+  choice <- placeBase %>%
+    group_by(Year = eval(parse(text = year)))
+  minimo <- min(choice$Year)
+  maximo <- max(choice$Year)
+  
+  sliderInput("yearCor",
+              h6("Choose years below which you want to correlate"),
+              min = minimo,
+              max = maximo,
+              value = c(minimo, maximo),
+              step = 1,
+              sep = "")
+  
+})
+
+filterCor <- reactive({
+  
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  placeBase %>%
+    filter(eval(parse(text = place)) %in% input$placeCor,
+           between(eval(parse(text = period)), input$yearCor[1], input$yearCor[2])) %>%
+    select_if(~ !any(is.na(.)))
+  
+})
+
+output$dataCor <- renderUI({
+  
+  varSelectizeInput("dataCor",
+                    h6("Select what data you want to correlate: "),
+                    subset(filterCor(),select = -c(1,2)),
+                    multiple = TRUE,
+                    options = list(maxItems = 10)
+        )
+  
+})
+
+```
+
+```{r warning=FALSE}
+####### Line Filter
+
+conditionalPanel(condition = "input.tabselected==5",
+                uiOutput("placesLine"),
+                uiOutput("yearLine"),
+                uiOutput("dataLine")
+              )
+
+output$placesLine <- renderUI({
+    
+  place <- toString(names(subset(placeBase, select = c(1))))
+  choice <- placeBase %>%
+    group_by(States = eval(parse(text = place)))
+  
+  selectizeInput("placesLine",
+                 h6("Places you want to visualize on graph:"),
+                 choice$States,
+                 multiple = TRUE,
+                 options = list(maxItems = 10))
+  
+})
+  
+output$yearLine <- renderUI({
+  
+  year <- toString(names(subset(placeBase, select = c(2))))
+  choice <- placeBase %>%
+    group_by(Year = eval(parse(text = year)))
+  minimo <- min(choice$Year)
+  maximo <- max(choice$Year)
+  
+  sliderInput("yearLine",
+              h6("Choose the mean between below years or one year:"),
+              min = minimo,
+              max = maximo,
+              value = c(minimo, maximo),
+              step = 1,
+              sep = "")
+  
+})
+
+output$dataLine <- renderUI({
+  
+  varSelectInput("dataLine",
+                     h6("Select what data you want to correlate: "),
+                     subset(placeBase,select = -c(1,2)))
+  
+})
+
+```
+
+Outputs{data-width=700}
+----------------------------------------------------
+
+```{r warning=FALSE}
 tabsetPanel(type = "tabs",
             id = "tabselected",
             tabPanel("Map",
                      value=1,
                      textOutput("maptxt"),
-                     leafletOutput("mymap"),
-                     img(id="image", src = "www/north-arrow.png", align = "bottom-left", width = "40px", height = "40px")
-                     ),
+                     leafletOutput("mymap")
+            ),
             tabPanel("SIAF",
-                     value=2,
-                     textOutput("plottxtSIAF"),
-                     plotlyOutput("graphSIAF")
-                    ),
-            tabPanel("Graphs",
-                     value=3,
-                     textOutput("plottxt"),
-                     plotlyOutput("graph")
-                    )
-         )
+                  value=2,
+                  textOutput("plottxtSIAF"),
+                  plotlyOutput("graphSIAF")
+            ),
+            tabPanel("Bar Chart",
+                   value=3,
+                   textOutput("plottxtBar"),
+                   plotlyOutput("graphBar")
+            ),
+            tabPanel("Correlation Chart",
+                  value=4,
+                  textOutput("plottxtCor"),
+                  plotlyOutput("graphCor")
+            ),
+            tabPanel("Line Chart",
+                  value=5,
+                  textOutput("plottxtLine"),
+                  plotlyOutput("graphLine")
+            )
+          )
 ```
 
+```{r warning=FALSE}
+####### Map Output
+
+dataInput <- reactive({
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  placeOrder <- unique(placeBase[,1])
+  
+  choice <- toString(input$select)
+  
+  placeBase %>%
+    filter(between(eval(parse(text = period)), input$yearmap[1], input$yearmap[2]))%>%
+    group_by(Districts = eval(parse(text = place))) %>%
+    summarise(Data = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
+    arrange(factor(Districts, levels = placeOrder))
+  
+})
+
+palette <- reactive({
+  colorNumeric("RdYlBu", domain = dataInput()$Data)
+})
+
+labels <- reactive({
+  titulo <- toString(input$select)
+  unity <- units %>%
+    filter(Name == titulo)
+  unidade <- toString(unity$Unit)
+  
+  paste("<p>", dataInput()$Districts, "<p>",
+        "<p>", titulo, ": ", round(dataInput()$Data, digits = 2), " ", unidade, "<p>",
+        sep ="")
+})
+
+output$mymap <- renderLeaflet({
+  
+  titulo <- toString(input$select)
+  unity <- units %>%
+    filter(Name == titulo)
+  unidade <- toString(unity$Unit)
+  
+  
+  leaflet(width = 200, height = 300) %>%
+        addTiles() %>%
+        addPolygons( data = places,
+                     weight = 1,
+                     smoothFactor = 0.5,
+                     fillOpacity = 0.8,
+                     color = ~palette()(dataInput()$Data),
+                     highlight = highlightOptions(
+                       weight = 5,
+                       color = "#666666",
+                       fillOpacity = 0.7,
+                       bringToFront = TRUE
+                     ),
+                     label = lapply(labels(), HTML)
+        ) %>%
+        addLegend(pal = palette(),
+                  values = dataInput()$Data,
+                  opacity = 0.7,
+                  position = "bottomright",
+                  title = unidade)
+  
+  
+})
+
+output$maptxt <- renderText({
+  
+  str2 = input$select
+  str3 = " from "
+  str4 = input$yearmap[1]
+  str5 = " to "
+  str6 = input$yearmap[2]
+  str1 = " of "
+  
+  if (input$yearmap[1] != input$yearmap[2]){
+    
+    result = paste(str2,str3,str4,str5,str6)
+    
+  }
+  
+  else if(input$yearmap[1] == input$yearmap[2]){
+    
+    result = paste(str2,str1,str4)
+    
+  }
+  
+  result
+  
+})
+
+```
+
+```{r warning=FALSE}
+####### SIAF Output
+
+dataInputGraphSIAF <- reactive({
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  
+  productivity <- as.character(input$productivity)
+  economic <- as.character(input$economic)
+  environmental <- as.character(input$environmental)
+  human <- as.character(input$human)
+  social <- as.character(input$social)
+  choices <- c(productivity, economic, human, social)
+  
+  if(input$placeoryearSIAF == "MD"){
+    
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
+             between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+      group_by(Places = eval(parse(text = place))) %>%
+      summarise_at(vars(choices), mean, na.rm=TRUE) %>%
+      ungroup() %>%
+      mutate_at(vars(-Places), scales::rescale)
+      #mutate_at(vars(-Places), ~coalesce(.,0))
+    
+  }
+  
+  else if(input$placeoryearSIAF == "SD"){
+    
+    placeBase %>%
+      filter(eval(parse(text = place)) == input$selectplacesSIAF,
+             eval(parse(text = period)) %in% input$yearSIAF) %>%
+      group_by(Years = eval(parse(text = period))) %>%
+      summarise_at(vars(choices), mean, na.rm=TRUE) %>%
+      ungroup() %>%
+      mutate_at(vars(-Years), scales::rescale)
+     # mutate_at(vars(-Years), ~coalesce(.,0))
+    
+  }
+  
+})
+
+output$graphSIAF <- renderPlotly({
+  
+  graph <- dataInputGraphSIAF() %>%
+      ggradar(
+        font.radar = "roboto",
+        grid.label.size = 2.5,
+        axis.label.size = 3,
+        group.point.size = 3
+      ) + 
+      theme(
+        legend.position = "top",
+        legend.justification = c(1, 0),
+        legend.text = element_text(size = 8, family = "roboto"),
+        legend.key = element_rect(fill = NA, color = NA),
+        legend.background = element_blank(),
+        axis.text = element_text(size=7, angle=90, vjust=5, hjust=5)
+      )
+  
+  ggplotly(graph)
+  
+})
+
+output$plottxtSIAF <- renderText({
+  
+  str2 = "Radar Plot "
+  str7 = toString(input$selectfgraphSIAF)
+  str3 = "from "
+  str4 = input$yearSIAF[1]
+  str5 = " to "
+  str6 = input$yearSIAF[2]
+  str1 = "of "
+  str8 = input$selectplacesSIAF
+  
+  if(input$placeoryearSIAF == "MD"){
+    
+    if (input$yearSIAF[1] != input$yearSIAF[2]){
+      
+      result = paste(str2, str3, str4, str5, str6)
+      
+    }
+    
+    else if(input$yearSIAF[1] == input$yearSIAF[2]){
+      
+      result = paste(str2, str1, str4)
+      
+    }
+    
+  }
+  
+  else if(input$placeoryearSIAF == "SD"){
+    
+    result = paste(str2,str3,str8)
+    
+  }
+  
+  result
+  
+})
+  
+```
+
+```{r warning=FALSE}
+####### Bar Plot
+
+dataInputBar <- reactive({
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  choiceG <- toString(input$dataBar)
+  
+  placeBase %>%
+    filter(eval(parse(text = place)) %in% input$placesBar,
+           between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+    group_by(Places = eval(parse(text = place))) %>%
+    summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE))
+  
+})
+
+output$graphBar <- renderPlotly({
+  
+  choiceD <- toString(input$dataBar)
+  unity <- units %>%
+      filter(Name == choiceD)
+  unidade <- toString(unity$Unit)
+  
+  legend <- paste(choiceD, "(", unidade, ")")
+  
+  barPlot <- ggplot(dataInputBar(), aes(x=Places, y=Data))+
+                geom_bar(stat="identity", color="#253659", fill="#03A696")+
+                geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
+                theme(
+                  panel.background = element_rect(fill = "#c7c7c9",
+                                                  colour = "#c7c7c9",
+                                                  size = 0.5, linetype = "solid"),
+                  axis.title.y = element_text(size = 8)
+                )+
+                labs(y = legend)
+  
+  ggplotly(barPlot)
+  
+})
+
+output$plottxtBar <- renderText({
+  
+  str2 = "Bar Chart"
+  str7 = toString(input$dataBar)
+  str3 = " from "
+  str4 = input$yearBar[1]
+  str5 = " to "
+  str6 = input$yearBar[2]
+  str1 = " of "
+  
+  if (input$yearBar[1] != input$yearBar[2]){
+    
+    result = paste(str2,str1,str7,str3,str4,str5,str6)
+    
+  }
+  
+  else if(input$yearBar[1] == input$yearBar[2]){
+    
+    result = paste(str2,str1,str7,str1,str4)
+    
+  }
+  
+  result
+})
+
+```
+
+```{r warning=FALSE}
+####### Correlation Output
+
+dataInputCor <- reactive({
+    
+  place <- toString(names(subset(filterCor(), select = c(1))))
+  period <- toString(names(subset(filterCor(), select = c(2))))
+  choicesD <- as.character(input$dataCor)
+  
+  filterCor() %>%
+    group_by(Places = eval(parse(text = place)))%>%
+    select_at(vars(choicesD))
+  
+})
+
+output$graphCor <- renderPlotly({
+  
+  corGraph <- dataInputCor()
+  corGraph[,1] <- NULL
+  corr <- round(cor(corGraph), 1)
+  
+  corPlot <- ggcorrplot(corr, hc.order = TRUE, type = "lower",lab = TRUE, lab_size = 2) +
+    theme(axis.text.x=element_text(size=7, angle=45, vjust=1, hjust=1, 
+                                   margin=margin(-3,0,0,0)),
+          axis.text.y=element_text(size=7, margin=margin(-3,0,0,0)),
+          panel.grid.major=element_blank()) 
+  
+  ggplotly(corPlot)
+  
+})
+
+output$plottxtCor <- renderText({
+  
+  str2 = "Correlation Matrix"
+  str1 = " of "
+  str7 = toString(input$dataCor)
+  str3 = " from "
+  str4 = toString(input$yearCor[1])
+  str5 = " to "
+  str6 = toString(input$yearCor[2])
+  
+  result = paste(str2,str1,str7,str3,str4,str5,str6)
+  
+})
+
+```
+
+```{r warning=FALSE}
+####### Line Output
+
+dataInputLine <- reactive({
+    
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  choicesD <- as.character(input$dataLine)
+  
+  placeBase %>%
+    filter(eval(parse(text = place)) %in% input$placesLine,
+           between(eval(parse(text = period)), input$yearLine[1], input$yearLine[2])) %>%
+    group_by(Year = eval(parse(text = period)),
+             Places = eval(parse(text = place))) %>%
+    select(Data = choicesD)
+
+})
+
+output$graphLine <- renderPlotly({
+  
+  choiceD <- toString(input$dataLine)
+  unity <- units %>%
+      filter(Name == choiceD)
+  unidade <- toString(unity$Unit)
+  
+  legend <- paste(choiceD, "(", unidade, ")")
+  
+  plotLine <- ggplot(dataInputLine(), aes(x = Year, y = Data, color = Places)) +
+                      geom_line()+
+                      theme(panel.background = element_rect(fill = "#c7c7c9"),
+                            axis.title.y = element_text(size = 8))+
+                      labs(y = legend)
+  
+  ggplotly(plotLine)
+  
+})
+
+output$plottxtLine <- renderText({
+  
+  str2 = "Line Chart"
+  str7 = toString(input$dataLine)
+  str3 = " from "
+  str4 = input$yearLine[1]
+  str5 = " to "
+  str6 = input$yearLine[2]
+  str1 = " of "
+  
+  if (input$yearLine[1] != input$yearLine[2]){
+    
+    result = paste(str2,str1,str7,str3,str4,str5,str6)
+    
+  }
+  
+  else if(input$yearLine[1] == input$yearLine[2]){
+    
+    result = paste(str2,str1,str7,str1,str4)
+    
+  }
+  
+  result
+  
+})
+
+```
+
+# Data
+
+```{r}
+
+h2("This is the raw data: ", style="margin: 10px;")
+
+output$downloadData <- downloadHandler(
+  filename = "SenegalDataset.csv",
+  content = function(file) {
+    write.csv(placeBase, file, row.names = FALSE)
+  }
+)
+
+renderUI({
+  
+  downloadButton("downloadData",
+                 "Download Senegal data",
+                 style="margin: 10px;")
+})
+
+
+
+DT::dataTableOutput("dataInput",
+                    height = "150em")
+
+output$dataInput <- DT::renderDataTable({placeBase},options = list(pageLength = 10,
+                                                                   scrollX = TRUE,
+                                                                   autoWidth = TRUE))
+
+```
+
+# About
+
+Column {data-width=1000}
+---------------------------------------------------------------
+
+### About the project
+```{r}
+p (style="text-align: justify; padding: 20px", )
+h2 (style="padding: 10px", "Authors: ")
+p (style="text-align: justify; padding: 20px", "Ana J.P. Carcedo, Gustavo N. Santiago, Molly E. Brown, Ignacio A. Ciampitti.")
+h2 (style="padding: 10px", "How to cite this app: ")
+p (style="text-align: justify; padding: 20px"," *Citation of paper *")
+h2 (style="padding: 10px", "Contacts: ")
+p (style="text-align: justify; padding: 10px", "* Links of Ciampitti webb-site, mine github, Ciampitti's twitter *")
+
+```
 
