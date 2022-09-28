@@ -21,7 +21,6 @@ library(leaflet)
 library(leaflet.extras2)
 library(mapview)
 library(scales)
-library(rgdal)
 library(dplyr)
 library(htmltools)
 library(ggplot2)
@@ -33,12 +32,13 @@ library(ggradar)
 library(ggcorrplot)
 library(plotly)
 library(DT)
-
+library(sf)
 ```
 
-```{r message=FALSE }
+```{r message=FALSE}
 
-places <- rgdal::readOGR("C:/Users/gsantiago/Documents/K-State/Senegal-visualizing-data-app/Data", "zonal_stats", verbose =FALSE)
+Sys.setenv(SHAPE_RESTORE_SHX="YES")
+places <- st_read("Shapefiles/zonal_stats.shp", stringsAsFactors=FALSE, quiet=TRUE)
 placeBase <- read.csv("Data/Full Data.csv", sep=",", dec=".")
 units <- read.csv("Data/Units.csv", sep = ",", dec = ".")
 economic <- read.csv("Data/Economic.csv", sep = ",", dec = ".")
