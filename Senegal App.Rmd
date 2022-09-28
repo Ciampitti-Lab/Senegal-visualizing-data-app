@@ -3,20 +3,20 @@ title: "Senegal Data Visualization"
 output: 
   flexdashboard::flex_dashboard:
         orientation: columns
-        navbar:
-           - { icon: "fa-question-circle", href: "https://www.siildigitalagconsortium.com/", align: right }
         theme:
-            bg: "#c7c7c9"
-            fg: "#253659"
-            primary: "#253659"
-            navbar-bg: "#03A696"
-            base_font: "Ruda"
+            bg: "#dbd9d9"
+            fg: "#285585"
+            primary: "#285585"
+            base_font: !expr bslib::font_google("Lato")
         vertical_layout: fill
 runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 library(shiny)
+library(flexdashboard)
+library(shinydashboard)
+library(shinythemes)
 library(leaflet)
 library(leaflet.extras2)
 library(mapview)
@@ -33,13 +33,12 @@ library(ggradar)
 library(ggcorrplot)
 library(plotly)
 library(DT)
-tags$style("@import url('//db.onlinewebfonts.com/c/077fa7cbfe52fe910144d5e51c654a05?family=Ruda')")
 
 ```
 
-```{r}
+```{r message=FALSE }
 
-places <- rgdal::readOGR("C:/Users/gsantiago/Documents/K-State/Senegal-visualizing-data-app/Data", "zonal_stats")
+places <- rgdal::readOGR("C:/Users/gsantiago/Documents/K-State/Senegal-visualizing-data-app/Data", "zonal_stats", verbose =FALSE)
 placeBase <- read.csv("Data/Full Data.csv", sep=",", dec=".")
 units <- read.csv("Data/Units.csv", sep = ",", dec = ".")
 economic <- read.csv("Data/Economic.csv", sep = ",", dec = ".")
@@ -51,15 +50,13 @@ environment <- read.csv("Data/Environment.csv", sep = ",", dec = ".")
 ```
 
 # Instructions
-
 Column {data-width=700}
 ----------------------------------------------------
 ### Instructions
-
-```{r warning=FALSE}
-
-
+```{r}
+p(style="text-align: center","******* A video will be included here *******")
 ```
+
 # Visualization
 
 Inputs{.sidebar data-width=350}
@@ -443,30 +440,36 @@ Outputs{data-width=700}
 ```{r warning=FALSE}
 tabsetPanel(type = "tabs",
             id = "tabselected",
-            tabPanel("Map",
+            tabPanel(style = "margin: 15px",
+                     "Map",
                      value=1,
-                     textOutput("maptxt"),
+                     span(textOutput("maptxt"), style="text-align:center; font-weight: bold"),
                      leafletOutput("mymap")
+                     
             ),
-            tabPanel("SIAF",
-                  value=2,
-                  textOutput("plottxtSIAF"),
-                  plotlyOutput("graphSIAF")
+            tabPanel(style = "margin: 15px",
+                     "SIAF",
+                     value=2,
+                     span(textOutput("plottxtSIAF"),style="text-align:center; font-weight: bold"),
+                     plotlyOutput("graphSIAF")
             ),
-            tabPanel("Bar Chart",
-                   value=3,
-                   textOutput("plottxtBar"),
-                   plotlyOutput("graphBar")
+            tabPanel(style = "margin: 15px",
+                     "Bar Chart",
+                     value=3,
+                     span(textOutput("plottxtBar"),style="text-align:center; font-weight: bold"),
+                     plotlyOutput("graphBar")
             ),
-            tabPanel("Correlation Chart",
-                  value=4,
-                  textOutput("plottxtCor"),
-                  plotlyOutput("graphCor")
+            tabPanel(style = "margin: 15px",
+                     "Correlation Chart",
+                     value=4,
+                     span(textOutput("plottxtCor"),style="text-align:center; font-weight: bold"),
+                     plotlyOutput("graphCor")
             ),
-            tabPanel("Line Chart",
-                  value=5,
-                  textOutput("plottxtLine"),
-                  plotlyOutput("graphLine")
+            tabPanel(style = "margin: 15px",
+                     "Line Chart",
+                     value=5,
+                     span(textOutput("plottxtLine"),style="text-align:center; font-weight: bold"),
+                     plotlyOutput("graphLine")
             )
           )
 ```
@@ -850,13 +853,11 @@ output$plottxtLine <- renderText({
 
 ```{r}
 
-h2("This is the raw data: ", style="margin: 10px;")
+h2("Data: ", style="margin: 10px;")
 
 output$downloadData <- downloadHandler(
   filename = "SenegalDataset.csv",
-  content = function(file) {
-    write.csv(placeBase, file, row.names = FALSE)
-  }
+  content = function(file) {write.csv(placeBase, file, row.names = FALSE)}
 )
 
 renderUI({
@@ -869,28 +870,44 @@ renderUI({
 
 
 DT::dataTableOutput("dataInput",
-                    height = "150em")
+                    height = "150em",
+                    width = "78em")
 
 output$dataInput <- DT::renderDataTable({placeBase},options = list(pageLength = 10,
-                                                                   scrollX = TRUE,
-                                                                   autoWidth = TRUE))
+                                                                   scrollX = TRUE))
 
 ```
 
 # About
-
-Column {data-width=1000}
+Column {data-width=50}
 ---------------------------------------------------------------
+<a href = "https://www.siildigitalagconsortium.com/"><img src="Logo.png" height="120" width="120"/></a>
+<h6>Digital Tools, Geospatial and Farming Systems Consortium</h6> 
+<br>
+<a href = "https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"><img src="SITOOLKIT.svg" height="120" width="120"/></a>
+<h6>Sustainable Intensification Assessment Framework</h6> 
 
-### About the project
+Column {data-width=600}
+---------------------------------------------------------------
+### Description
 ```{r}
-p (style="text-align: justify; padding: 20px", )
-h2 (style="padding: 10px", "Authors: ")
-p (style="text-align: justify; padding: 20px", "Ana J.P. Carcedo, Gustavo N. Santiago, Molly E. Brown, Ignacio A. Ciampitti.")
-h2 (style="padding: 10px", "How to cite this app: ")
+p (style="text-align: justify; padding: 20px", "A recent study within our team (Brown et al, under review) quantified the lack of connection between the different Sustainable Intensification Framework Domains in the current and most cited research.
+Therefore, we propose the design of an Integration Platform, to facilitate the visualization of interactions between the different Sustainable Intensification Framework Domain available data-layers.
+This platform aggregates and summarizes the outcomes of our team projects and open-data sources.
+This tool will serve as a Sustainable Intensification Framework application, employing Senegal as a case study, allowing the comparison between districts.")
+h3 (style="padding: 10px", "Authors: ")
+p (style="text-align: justify; padding: 20px", "")
+h3 (style="padding: 10px", "How to cite this app: ")
 p (style="text-align: justify; padding: 20px"," *Citation of paper *")
-h2 (style="padding: 10px", "Contacts: ")
-p (style="text-align: justify; padding: 10px", "* Links of Ciampitti webb-site, mine github, Ciampitti's twitter *")
+h3 (style="padding: 10px", "Check out our website: ")
+a(href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification")
+
+```
+
+
+# Data Source
+
+```{r}
 
 ```
 
