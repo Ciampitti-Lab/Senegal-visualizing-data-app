@@ -50,17 +50,18 @@ environment <- read.csv("Data/Environment.csv", sep = ",", dec = ".")
 ```
 
 # Instructions
-Column {data-width=700}
-----------------------------------------------------
+
+## Column {data-width="700"}
+
 ### Instructions
+
 ```{r}
 p(style="text-align: center","******* A video will be included here *******")
 ```
 
 # Visualization
 
-Inputs{.sidebar data-width=350}
-----------------------------------------------------
+## Inputs {.sidebar data-width="350"}
 
 ```{r warning=FALSE}
 ####### Map Filter
@@ -70,7 +71,9 @@ conditionalPanel(tags$style(type="text/css",
                  ".shiny-output-error:before { visibility: hidden; }"),
                   condition = "input.tabselected==1",
                   uiOutput("select"),
-                  uiOutput("yearmap")
+                  uiOutput("yearmap"),
+                 h6("Mean or sum of data between those years:"),
+                 uiOutput("morsummap")
                 )
 
 output$select <- renderUI({
@@ -95,6 +98,16 @@ output$yearmap <- renderUI({
                 sep = "")
     
   })
+
+output$morsummap <- renderUI({
+  
+  switchInput(
+   inputId = "morsummap",
+   value = TRUE,
+   onLabel = "Mean",
+   offLabel = "Sum")
+  
+})
 
 ```
 
@@ -132,7 +145,8 @@ output$selectplacesSIAF <- renderUI({
     
     selectizeInput("selectplacesSIAF",
                    h6("Places you want to visualize on graph:"),
-                   choice$States,
+                   choices = c("Choose up to 10 Districts" = '',
+                               choice$States),
                    multiple = TRUE,
                    options = list(maxItems = 10))
   }
@@ -140,7 +154,8 @@ output$selectplacesSIAF <- renderUI({
   else if(input$placeoryearSIAF == "SD"){
     selectInput("selectplacesSIAF",
                 h6("Place you want to visualize on graph:"),
-                choice$States)
+                choices = c("Choose a District" = '',
+                            choice$States))
   }
   
 })
@@ -153,26 +168,12 @@ output$yearSIAF <- renderUI({
   minimo <- min(choice$Year)
   maximo <- max(choice$Year)
   
-  if(input$placeoryearSIAF == "MD"){
-    sliderInput("yearSIAF",
-                h6("Choose the mean between below years or one year:"),
-                min = minimo,
-                max = maximo,
-                value = c(minimo, maximo),
-                step = 1,
-                sep = "")
-  }
-  
-  else if(input$placeoryearSIAF == "SD"){
-    
-    selectizeInput("yearSIAF",
+  selectizeInput("yearSIAF",
                    h6("Choose years you want to compare"),
-                   choice$Year,
-                   multiple = TRUE,
-                   options = list(maxItems = 10)
-    )
+                   choices = c("Choose years" = '',
+                               choice$Year),
+                   multiple = TRUE)
     
-  }
   
 })
 
@@ -183,14 +184,16 @@ output$productivity <- renderUI({
   
   production_filtered <- production %>%
         filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-               between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+               eval(parse(text = period)) %in% input$yearSIAF) %>%
         select_if(~ !any(is.na(.)))
   
-  varSelectizeInput("productivity",
+  if(!is.null(production_filtered[,3])){
+    varSelectizeInput("productivity",
                     h6("Productivity"),
                     subset(production_filtered, select = -c(1,2)),
-                    multiple = TRUE,
-                    options = list(maxItems = 2))
+                    multiple = TRUE)
+  }
+  
   
 })
 
@@ -201,14 +204,15 @@ output$economic <- renderUI({
   
   economic_filtered <- economic %>%
     filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+           eval(parse(text = period)) %in% input$yearSIAF) %>%
     select_if(~ !any(is.na(.)))
   
+  if(!is.null(economic_filtered[,3])){
   varSelectizeInput("economic",
                     h6("Economic"),
                     subset(economic_filtered, select = -c(1,2)),
-                    multiple = TRUE,
-                    options = list(maxItems = 2))
+                    multiple = TRUE)
+  }
   
 })
 
@@ -219,14 +223,16 @@ output$environmental <- renderUI({
   
   environment_filtered <- environment %>%
     filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+           eval(parse(text = period)) %in% input$yearSIAF) %>%
     select_if(~ !any(is.na(.)))
   
-  varSelectizeInput("environmental",
+  if(!is.null(environment_filtered[,3])){
+    varSelectizeInput("environmental",
                     h6("Environmental"),
                     subset(environment_filtered, select = -c(1,2)),
-                    multiple = TRUE,
-                    options = list(maxItems = 2))
+                    multiple = TRUE)
+  }
+  
 
 })
 
@@ -237,14 +243,15 @@ output$human <- renderUI({
   
   human_filtered <- human %>%
     filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+           eval(parse(text = period)) %in% input$yearSIAF) %>%
     select_if(~ !any(is.na(.)))
   
-  varSelectizeInput("human",
-                    h6("Human"),
+  if(!is.null(human_filtered[,3])){
+    varSelectizeInput("human",
+                    h6("Human (choose up to 2 variables)"),
                     subset(human_filtered, select = -c(1, 2)),
-                    multiple = TRUE,
-                    options = list(maxItems = 2))
+                    multiple = TRUE)
+  }
   
 })
 
@@ -255,14 +262,15 @@ output$social <- renderUI({
   
   social_filtered <- social %>%
     filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-           between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+           eval(parse(text = period)) %in% input$yearSIAF) %>%
     select_if(~ !any(is.na(.)))
   
-  varSelectizeInput("social",
-                    h6("Social"),
+  if(!is.null(social_filtered[,3])){
+    varSelectizeInput("social",
+                    h6("Social (choose up to 2 variables)"),
                     subset(social_filtered, select = -c(1,2)),
-                    multiple = TRUE,
-                    options = list(maxItems = 2))
+                    multiple = TRUE)
+  }
   
 })
 
@@ -274,6 +282,8 @@ output$social <- renderUI({
 conditionalPanel(condition = "input.tabselected==3",
                 uiOutput("placesBar"),
                 uiOutput("yearBar"),
+                h6("Mean or sum of data between those years:"),
+                uiOutput("morsumbar"),
                 uiOutput("dataBar")
               )
 
@@ -308,6 +318,16 @@ output$yearBar <- renderUI({
   
 })
 
+output$morsumbar <- renderUI({
+  
+  switchInput(
+   inputId = "morsumbar",
+   value = TRUE,
+   onLabel = "Mean",
+   offLabel = "Sum")
+  
+})
+
 output$dataBar <- renderUI({
   
   varSelectizeInput("dataBar",
@@ -336,7 +356,8 @@ output$placeCor <- renderUI({
   
   selectInput("placeCor",
               h6("Places you want to visualize on graph:"),
-              choice$States)
+              choices = c("Choose one District" = '',
+                          choice$States))
   
 })
 
@@ -345,16 +366,12 @@ output$yearCor <- renderUI({
   year <- toString(names(subset(placeBase, select = c(2))))
   choice <- placeBase %>%
     group_by(Year = eval(parse(text = year)))
-  minimo <- min(choice$Year)
-  maximo <- max(choice$Year)
   
-  sliderInput("yearCor",
-              h6("Choose years below which you want to correlate"),
-              min = minimo,
-              max = maximo,
-              value = c(minimo, maximo),
-              step = 1,
-              sep = "")
+  selectizeInput("yearCor",
+                   h6("Choose years below which you want to correlate"),
+                   choices = c("Choose your years" = '',
+                               choice$Year),
+                   multiple = TRUE)
   
 })
 
@@ -365,7 +382,7 @@ filterCor <- reactive({
   
   placeBase %>%
     filter(eval(parse(text = place)) %in% input$placeCor,
-           between(eval(parse(text = period)), input$yearCor[1], input$yearCor[2])) %>%
+           eval(parse(text = period)) %in% input$yearCor) %>%
     select_if(~ !any(is.na(.)))
   
 })
@@ -373,10 +390,10 @@ filterCor <- reactive({
 output$dataCor <- renderUI({
   
   varSelectizeInput("dataCor",
-                    h6("Select what data you want to correlate: "),
+                    h6("Select what data you want to correlate: (up to 9 variables"),
                     subset(filterCor(),select = -c(1,2)),
                     multiple = TRUE,
-                    options = list(maxItems = 10)
+                    options = list(maxItems = 9)
         )
   
 })
@@ -434,8 +451,7 @@ output$dataLine <- renderUI({
 
 ```
 
-Outputs{data-width=700}
-----------------------------------------------------
+## Outputs {data-width="700"}
 
 ```{r warning=FALSE}
 tabsetPanel(type = "tabs",
@@ -444,20 +460,15 @@ tabsetPanel(type = "tabs",
                      "Map",
                      value=1,
                      span(textOutput("maptxt"), style="text-align:center; font-weight: bold"),
-                     leafletOutput("mymap")
-                     
+                     leafletOutput("mymap"),
+                      span(uiOutput("notavmap"),
+                           style="text-align:center; font-weight: bold")
             ),
             tabPanel(style = "margin: 15px",
                      "SIAF",
                      value=2,
                      span(textOutput("plottxtSIAF"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphSIAF")
-            ),
-            tabPanel(style = "margin: 15px",
-                     "Bar Chart",
-                     value=3,
-                     span(textOutput("plottxtBar"),style="text-align:center; font-weight: bold"),
-                     plotlyOutput("graphBar")
             ),
             tabPanel(style = "margin: 15px",
                      "Correlation Chart",
@@ -470,6 +481,12 @@ tabsetPanel(type = "tabs",
                      value=5,
                      span(textOutput("plottxtLine"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphLine")
+            ),
+            tabPanel(style = "margin: 15px",
+                     "Bar Chart",
+                     value=3,
+                     span(textOutput("plottxtBar"),style="text-align:center; font-weight: bold"),
+                     plotlyOutput("graphBar")
             )
           )
 ```
@@ -485,16 +502,30 @@ dataInput <- reactive({
   
   choice <- toString(input$select)
   
-  placeBase %>%
-    filter(between(eval(parse(text = period)), input$yearmap[1], input$yearmap[2]))%>%
-    group_by(Districts = eval(parse(text = place))) %>%
-    summarise(Data = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
-    arrange(factor(Districts, levels = placeOrder))
+  if(input$morsummap == TRUE){
+    placeBase %>%
+      filter(between(eval(parse(text = period)), input$yearmap[1], input$yearmap[2]))%>%
+      group_by(Districts = eval(parse(text = place))) %>%
+      summarise(Data = mean(eval(parse(text = choice)), na.rm=TRUE)) %>%
+      arrange(factor(Districts, levels = placeOrder))
+  }
+  else if(input$morsummap == FALSE){
+    placeBase %>%
+      filter(between(eval(parse(text = period)), input$yearmap[1], input$yearmap[2]))%>%
+      group_by(Districts = eval(parse(text = place))) %>%
+      summarise(Data = sum(eval(parse(text = choice)), na.rm=TRUE)) %>%
+      arrange(factor(Districts, levels = placeOrder))
+  }
+  
   
 })
 
 palette <- reactive({
-  colorNumeric("RdYlBu", domain = dataInput()$Data)
+  colorNumeric(c("#d7191c","#fdae61","#ffffbf","#abd9e9", "#2c7bb6"), domain = dataInput()$Data, reverse = TRUE)
+})
+
+pale <- reactive({
+    colorNumeric(c("#d7191c","#fdae61","#ffffbf","#abd9e9", "#2c7bb6"), domain = dataInput()$Data)
 })
 
 labels <- reactive({
@@ -506,6 +537,7 @@ labels <- reactive({
   paste("<p>", dataInput()$Districts, "<p>",
         "<p>", titulo, ": ", round(dataInput()$Data, digits = 2), " ", unidade, "<p>",
         sep ="")
+  
 })
 
 output$mymap <- renderLeaflet({
@@ -515,14 +547,14 @@ output$mymap <- renderLeaflet({
     filter(Name == titulo)
   unidade <- toString(unity$Unit)
   
-  
-  leaflet(width = 200, height = 300) %>%
+  if(!all(is.na(dataInput()$Data))){
+    leaflet(width = 200, height = 300) %>%
         addTiles() %>%
         addPolygons( data = places,
                      weight = 1,
                      smoothFactor = 0.5,
                      fillOpacity = 0.8,
-                     color = ~palette()(dataInput()$Data),
+                     color = ~pale()(dataInput()$Data),
                      highlight = highlightOptions(
                        weight = 5,
                        color = "#666666",
@@ -535,8 +567,27 @@ output$mymap <- renderLeaflet({
                   values = dataInput()$Data,
                   opacity = 0.7,
                   position = "bottomright",
-                  title = unidade)
-  
+                  title = unidade,
+                  na.label = "n/a", 
+                  labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)))
+    }
+    else if(all(is.na(dataInput()$Data))){
+      leaflet(width = 200, height = 300) %>%
+        addTiles() %>%
+        addPolygons( data = places,
+                     weight = 1,
+                     smoothFactor = 0.5,
+                     fillOpacity = 0.8,
+                     color = "#808080",
+                     highlight = highlightOptions(
+                       weight = 5,
+                       color = "#666666",
+                       fillOpacity = 0.7,
+                       bringToFront = TRUE
+                     ),
+                     label = lapply(labels(), HTML)
+        )
+    }
   
 })
 
@@ -565,6 +616,17 @@ output$maptxt <- renderText({
   
 })
 
+output$notavmap <- renderText({
+  
+  if(all(is.na(dataInput()$Data))){
+    "No data available on this year"
+  }
+  
+  else if(any(is.na(dataInput()$Data))){
+    "n/a = No Available"
+  }
+})
+
 ```
 
 ```{r warning=FALSE}
@@ -579,7 +641,7 @@ dataInputGraphSIAF <- reactive({
   environmental <- as.character(input$environmental)
   human <- as.character(input$human)
   social <- as.character(input$social)
-  choices <- c(productivity, economic, human, social)
+  choices <- c(productivity, economic, human, social, environmental)
   
   if(input$placeoryearSIAF == "MD"){
     
@@ -590,7 +652,6 @@ dataInputGraphSIAF <- reactive({
       summarise_at(vars(choices), mean, na.rm=TRUE) %>%
       ungroup() %>%
       mutate_at(vars(-Places), scales::rescale)
-      #mutate_at(vars(-Places), ~coalesce(.,0))
     
   }
   
@@ -603,7 +664,6 @@ dataInputGraphSIAF <- reactive({
       summarise_at(vars(choices), mean, na.rm=TRUE) %>%
       ungroup() %>%
       mutate_at(vars(-Years), scales::rescale)
-     # mutate_at(vars(-Years), ~coalesce(.,0))
     
   }
   
@@ -627,7 +687,7 @@ output$graphSIAF <- renderPlotly({
         axis.text = element_text(size=7, angle=90, vjust=5, hjust=5)
       )
   
-  ggplotly(graph)
+  ggplotly(graph, tooltip = "")
   
 })
 
@@ -678,11 +738,21 @@ dataInputBar <- reactive({
   period <- toString(names(subset(placeBase, select = c(2))))
   choiceG <- toString(input$dataBar)
   
-  placeBase %>%
-    filter(eval(parse(text = place)) %in% input$placesBar,
-           between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
-    group_by(Places = eval(parse(text = place))) %>%
-    summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE))
+  if(input$morsumbar == TRUE){
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$placesBar,
+             between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+      group_by(Places = eval(parse(text = place))) %>%
+      summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE))
+  }
+  else if(input$morsumbar == FALSE){
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$placesBar,
+             between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+      group_by(Places = eval(parse(text = place))) %>%
+      summarise(Data = sum(eval(parse(text = choiceG)), na.rm=TRUE))
+  }
+  
   
 })
 
@@ -758,7 +828,13 @@ output$graphCor <- renderPlotly({
   corGraph[,1] <- NULL
   corr <- round(cor(corGraph), 1)
   
-  corPlot <- ggcorrplot(corr, hc.order = TRUE, type = "lower",lab = TRUE, lab_size = 2) +
+  corPlot <- ggcorrplot(corr,
+                        hc.order = TRUE,
+                        type = "lower",
+                        lab = TRUE,
+                        lab_size = 2,
+                        show.diag = TRUE,
+                        colors = c("red", "white","blue")) +
     theme(axis.text.x=element_text(size=7, angle=45, vjust=1, hjust=1, 
                                    margin=margin(-3,0,0,0)),
           axis.text.y=element_text(size=7, margin=margin(-3,0,0,0)),
@@ -879,35 +955,46 @@ output$dataInput <- DT::renderDataTable({placeBase},options = list(pageLength = 
 ```
 
 # About
-Column {data-width=50}
----------------------------------------------------------------
-<a href = "https://www.siildigitalagconsortium.com/"><img src="Logo.png" height="120" width="120"/></a>
-<h6>Digital Tools, Geospatial and Farming Systems Consortium</h6> 
-<br>
-<a href = "https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"><img src="SITOOLKIT.svg" height="120" width="120"/></a>
-<h6>Sustainable Intensification Assessment Framework</h6> 
 
-Column {data-width=600}
----------------------------------------------------------------
+## Images & Links {data-width="50"}
+
+<a href = "https://www.siildigitalagconsortium.com/"><img src="Logo.png" height="120" width="120"/></a>
+
+<h6>Digital Tools, Geospatial and Farming Systems Consortium</h6>
+
+<br> <a href = "https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"><img src="SITOOLKIT.svg" height="120" width="120"/></a>
+
+<h6>Sustainable Intensification Assessment Framework</h6>
+
+## About-text {data-width="600"}
+
 ### Description
+
 ```{r}
 p (style="text-align: justify; padding: 20px", "A recent study within our team (Brown et al, under review) quantified the lack of connection between the different Sustainable Intensification Framework Domains in the current and most cited research.
 Therefore, we propose the design of an Integration Platform, to facilitate the visualization of interactions between the different Sustainable Intensification Framework Domain available data-layers.
 This platform aggregates and summarizes the outcomes of our team projects and open-data sources.
 This tool will serve as a Sustainable Intensification Framework application, employing Senegal as a case study, allowing the comparison between districts.")
+h3 (style="padding: 10px", "What is SIAF: ")
+h5 (style="padding: 10px", "Productivity: ")
+p (style="text-align: justify; padding: 20px", "Increasing productivity is the essential characteristic of intensification, with the goal of increasing output per unit input per unit time (season or year). Following the SI literature, this domain focuses on land as a critical input, land degradation, and threatened biodiversity from loss of natural habitat. Intensification using inputs other than land (such as labor, fertilizer and capital) is captured in the economic domain.")
+h5 (style="padding: 10px", "Economic: ")
+p (style="text-align: justify; padding: 20px", "This domain focuses on issues directly related to the profitability of agricultural activities and returns to factors of production. In addition to profitability, this domain includes indicators related to the productivity of inputs apart from land: water, nutrients, labor and capital. Furthermore, indicators likely to affect the probability of investment in enhancing productivity (market participation) are included.")
+h5 (style="padding: 10px", "Environment: ")
+p (style="text-align: justify; padding: 20px", "This domain focuses on the natural resource base that supports agriculture (e.g., soil, water), the environmental services directly affected by agricultural practices (e.g., habitat, water-holding capacity), and the level of pollution resulting from agriculture (pesticides, greenhouse gases).")
+h5 (style="padding: 10px", "Human condition: ")
+p (style="text-align: justify; padding: 20px", "This domain contains indicators pertaining to the individual or household, including nutrition status, food security, and capacity to learn and adapt. These indicators affect an individual and do not require social interaction or interpersonal relationships. While these factors are dependent on social interactions (such as within the household or community), they are distinct from those in the social domain which directly focus on interpersonal relationships.")
+h5 (style="padding: 10px", "Social: ")
+p (style="text-align: justify; padding: 20px", "This domain focuses on social interactions: equitable relationships across gender within the household, equitable relationships across social groups in a community or landscape, the level of collective action, and the ability to resolve conflicts related to agriculture and natural resource management.")
 h3 (style="padding: 10px", "Authors: ")
 p (style="text-align: justify; padding: 20px", "")
 h3 (style="padding: 10px", "How to cite this app: ")
 p (style="text-align: justify; padding: 20px"," *Citation of paper *")
-h3 (style="padding: 10px", "Check out our website: ")
-a(href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification")
 
 ```
-
 
 # Data Source
 
 ```{r}
 
 ```
-
