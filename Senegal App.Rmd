@@ -272,10 +272,10 @@ output$morsumbar <- renderUI({
 
 output$dataBar <- renderUI({
   
-  varSelectizeInput("dataBar",
-                    h6("Select what data you want to visualize: "),
-                    subset(placeBase,select = -c(1,2))
-                    )
+  shinyWidgets::pickerInput(
+    inputId = "dataBar",
+    label = h6("Select what data you want to visualize on Bar plot:"),
+    choices = names(subset(placeBase,select = -c(1,2))))
   
 })
 
@@ -584,7 +584,7 @@ dataInputGraphSIAF <- reactive({
     
     placeBase %>%
       filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
-             between(eval(parse(text = period)), input$yearSIAF[1], input$yearSIAF[2])) %>%
+             eval(parse(text = period)) %in% input$yearSIAF) %>%
       group_by(Places = eval(parse(text = place))) %>%
       summarise_at(vars(input$dataSIAF), mean, na.rm=TRUE) %>%
       ungroup() %>%
