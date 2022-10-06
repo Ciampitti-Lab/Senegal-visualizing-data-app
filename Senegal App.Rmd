@@ -414,7 +414,7 @@ tabsetPanel(type = "tabs",
                      plotlyOutput("graphSIAF")
             ),
             tabPanel(style = "margin: 15px",
-                     "Correlation Chart",
+                     "Correlation Matrix",
                      value=4,
                      span(textOutput("plottxtCor"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphCor")
@@ -562,7 +562,7 @@ output$maptxt <- renderText({
 output$notavmap <- renderText({
   
   if(all(is.na(dataInput()$Data))){
-    "No data available on this year"
+    "No data available on this period"
   }
   
   else if(any(is.na(dataInput()$Data))){
@@ -614,14 +614,16 @@ output$graphSIAF <- renderPlotly({
         grid.label.size = 2.5,
         axis.label.size = 3,
         group.point.size = 3
-      ) + 
-      theme(
+      ) +
+    theme(
+        plot.background = element_rect(fill = "#dbd9d9"),
+        panel.background = element_rect(fill = "#dbd9d9"),
         legend.position = "top",
         legend.justification = c(1, 0),
         legend.text = element_text(size = 8, family = "roboto"),
         legend.key = element_rect(fill = NA, color = NA),
         legend.background = element_blank(),
-        axis.text = element_text(size=7, angle=90, vjust=5, hjust=5)
+        axis.text = element_text(hjust=0.5, vjust = 1)
       )
   
   ggplotly(graph, tooltip = "")
@@ -709,9 +711,12 @@ output$graphBar <- renderPlotly({
                   panel.background = element_rect(fill = "#dbd9d9",
                                                   colour = "#c7c7c9",
                                                   size = 0.5, linetype = "solid"),
+                  plot.background = element_rect(fill = "#dbd9d9"),
                   axis.title.y = element_text(size = 8)
                 )+
-                labs(y = legend)
+                labs(y = legend)+
+                labs(x = "Districts")
+    scale_y_continuous(labels = comma)
   
   ggplotly(barPlot)
   
@@ -775,7 +780,9 @@ output$graphCor <- renderPlotly({
     theme(axis.text.x=element_text(size=7, angle=45, vjust=1, hjust=1, 
                                    margin=margin(-3,0,0,0)),
           axis.text.y=element_text(size=7, margin=margin(-3,0,0,0)),
-          panel.grid.major=element_blank()) 
+          panel.grid.major=element_blank(),
+          plot.background = element_rect(fill = "#dbd9d9"),
+          panel.background = element_rect(fill = "#dbd9d9")) 
   
   ggplotly(corPlot)
   
@@ -827,7 +834,9 @@ output$graphLine <- renderPlotly({
   plotLine <- ggplot(dataInputLine(), aes(x = Year, y = Data, color = Districts)) +
     geom_line()+
     theme(panel.background = element_rect(fill = "#dbd9d9"),
-          axis.title.y = element_text(size = 8))+
+          plot.background = element_rect(fill = "#dbd9d9"),
+          axis.title.y = element_text(size = 8),
+          legend.background = element_rect(fill = "#dbd9d9"))+
     labs(y = legend)+
     scale_x_continuous(breaks = dataInputLine()$Year)+
     scale_y_continuous(labels = comma)
@@ -897,15 +906,9 @@ output$dataInput <- DT::renderDataTable({placeBase},options = list(pageLength = 
 
 ## Images & Links {data-width="50"}
 
-<a href = "https://www.siildigitalagconsortium.com/"><img src="Logo.png" height="120" width="120"></a>
+<a href = "https://www.siildigitalagconsortium.com"><img src="Logo Consortium_Lastversion Stikers.png" height="120" width="120"/></a>
 
 <h6>Digital Tools, Geospatial and Farming Systems Consortium</h6>
-
-<br>
-
-<a href = "https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"><img src="SITOOLKIT.svg" height="120" width="120"></a>
-
-<h6>Sustainable Intensification Assessment Framework</h6>
 
 ## About-text {data-width="600"}
 
