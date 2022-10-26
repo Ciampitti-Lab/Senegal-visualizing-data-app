@@ -906,7 +906,7 @@ output$dataInput <- DT::renderDataTable({placeBase},options = list(pageLength = 
 
 ## Images & Links {data-width="50"}
 
-<a href = "https://www.siildigitalagconsortium.com"><img src="Logo Consortium_Lastversion Stikers.png" height="120" width="120"/></a>
+<a href = "https://www.siildigitalagconsortium.com"><img src="logo_consortium.png" height="120" width="120"/></a>
 
 <h6>Digital Tools, Geospatial and Farming Systems Consortium</h6>
 
