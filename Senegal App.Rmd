@@ -281,6 +281,57 @@ output$dataBar <- renderUI({
 
 ```
 
+
+```{r}
+
+# Box Filter
+
+conditionalPanel(condition = "input.tabselected==6",
+                uiOutput("placesBox"),
+                uiOutput("yearBox"),
+                h6("Mean or sum of data between those years:"),
+                uiOutput("dataBox")
+              )
+
+output$placesBox <- renderUI({
+    place <- toString(names(subset(placeBase, select = c(1))))
+    choice <- placeBase %>%
+      group_by(States = eval(parse(text = place)))
+    
+    selectizeInput("placesBox",
+                   h6("Districts you want to visualize on graph:"),
+                   choices = c("Choose up to 10 Districts" = '',
+                             choice$States),
+                   multiple = TRUE,
+                   options = list(maxItems = 10))
+    
+  })
+
+output$yearBox <- renderUI({
+  
+  year <- toString(names(subset(placeBase, select = c(2))))
+  choice <- placeBase %>%
+    group_by(Year = eval(parse(text = year)))
+  
+  selectizeInput("yearBox",
+                   h6("Choose years below which you want to correlate"),
+                   choices = c("Choose your years" = '',
+                               choice$Year),
+                   multiple = TRUE)
+  
+})
+
+output$dataBox <- renderUI({
+  
+  shinyWidgets::pickerInput(
+    inputId = "dataBox",
+    label = h6("Select what data you want to visualize on Box plot:"),
+    choices = names(subset(placeBase,select = -c(1,2))))
+  
+})
+
+```
+
 ```{r warning=FALSE}
 ####### Correlation Filter
 
@@ -430,6 +481,12 @@ tabsetPanel(type = "tabs",
                      value=3,
                      span(textOutput("plottxtBar"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphBar")
+            ),
+            tabPanel(style = "margin: 15px",
+                     "Box Chart",
+                     value=6,
+                     span(textOutput("plottxtBox"),style="text-align:center; font-weight: bold"),
+                     plotlyOutput("graphBox")
             )
           )
 ```
@@ -739,6 +796,70 @@ output$plottxtBar <- renderText({
   }
   
   else if(input$yearBar[1] == input$yearBar[2]){
+    
+    result = paste(str2,str1,str7,str1,str4)
+    
+  }
+  
+  result
+})
+
+```
+
+```{r}
+
+# Box Plot
+
+dataInputBox <- reactive({
+  place <- toString(names(subset(placeBase, select = c(1))))
+  period <- toString(names(subset(placeBase, select = c(2))))
+  choiceG <- toString(input$dataBox)
+  
+  placeBase %>%
+    filter(eval(parse(text = place)) %in% input$placesBox,
+           eval(parse(text = period)) %in% input$yearBox) %>%
+    group_by(Places = eval(parse(text = place)))%>%
+    select(Data = as.name(choiceG))
+  
+  
+})
+
+output$graphBox <- renderPlotly({
+  
+  choiceD <- toString(input$dataBox)
+  
+  boxPlot <- ggplot(dataInputBox(), aes(x=Places, y=Data, color=Places))+
+                geom_boxplot(notch=TRUE)+
+                theme(
+                  panel.background = element_rect(fill = "#dbd9d9",
+                                                  colour = "#c7c7c9",
+                                                  size = 0.5, linetype = "solid"),
+                  plot.background = element_rect(fill = "#dbd9d9"),
+                  axis.title.y = element_text(size = 8)
+                )+
+                labs(y = choiceD)
+  
+  ggplotly(boxPlot)
+  
+})
+
+output$plottxtBox <- renderText({
+  
+  str2 = "Box Chart"
+  str7 = toString(input$dataBox)
+  str3 = " from "
+  str4 = input$yearBox[1]
+  str5 = " to "
+  str6 = input$yearBox[2]
+  str1 = " of "
+  
+  if (input$yearBox[1] != input$yearBox[2]){
+    
+    result = paste(str2,str1,str7,str3,str4,str5,str6)
+    
+  }
+  
+  else if(input$yearBox[1] == input$yearBox[2]){
     
     result = paste(str2,str1,str7,str1,str4)
     
