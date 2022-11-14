@@ -34,6 +34,13 @@ library(ggcorrplot)
 library(plotly)
 library(DT)
 library(sf)
+library(readxl)
+```
+
+```{css my-content, echo = FALSE}
+a {
+    color: #241678;
+}
 ```
 
 ```{r message=FALSE}
@@ -47,8 +54,11 @@ social <- read.csv("Data/Social_F.csv", sep = ",", dec = ".")
 human <- read.csv("Data/Human.csv", sep = ",", dec = ".")
 production <- read.csv("Data/Production.csv", sep = ",", dec = ".")
 environment <- read.csv("Data/Environment.csv", sep = ",", dec = ".")
+dataSource <- read_excel("Data/Variables description.xlsx")
+dataWithUnits <- read.csv("Data/dataWithUnits.csv", sep = ",", dec = ".", check.names=FALSE)
 
 ```
+
 
 # Instructions
 
@@ -76,11 +86,12 @@ conditionalPanel(tags$style(type="text/css",
                  h6("Mean or sum of data between those years:"),
                  uiOutput("morsummap")
                 )
-
+list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
 output$select <- renderUI({
-    varSelectInput("select",
+  
+    selectInput("select",
                    "Data you want to visualize on map:",
-                   subset(placeBase,select = -c(1,2)))
+                   list)
   })
   
 output$yearmap <- renderUI({
@@ -164,12 +175,20 @@ output$yearSIAF <- renderUI({
   minimo <- min(choice$Year)
   maximo <- max(choice$Year)
   
-  selectizeInput("yearSIAF",
+  if(input$placeoryearSIAF == "MD"){
+    selectizeInput("yearSIAF",
+                   h6("Choose years you want to compare the mean values between them"),
+                   choices = c("Choose years" = '',
+                               choice$Year),
+                   multiple = TRUE)
+  }
+  else if(input$placeoryearSIAF == "SD"){
+    selectizeInput("yearSIAF",
                    h6("Choose years you want to compare"),
                    choices = c("Choose years" = '',
                                choice$Year),
                    multiple = TRUE)
-    
+  }
   
 })
 
@@ -203,15 +222,21 @@ output$dataSIAF <- renderUI({
            eval(parse(text = period)) %in% input$yearSIAF) %>%
     select_if(~ !any(is.na(.)))
   
+  prodList <- gsub("\\.", " ", names(subset(production_filtered,select = -c(1,2))))
+  econoList <- gsub("\\.", " ", names(subset(economic_filtered,select = -c(1,2))))
+  socialList <- gsub("\\.", " ", names(subset(social_filtered,select = -c(1,2))))
+  humanList <- gsub("\\.", " ", names(subset(human_filtered, select = -c(1,2))))
+  enviroList <- gsub("\\.", " ", names(subset(environment_filtered,select = -c(1,2))))
+  
   shinyWidgets::pickerInput(
     inputId = "dataSIAF",
     label = h6("Select what data you want to visualize on radar plot:"),
     choices = list(
-      Production = names(subset(production_filtered, select = -c(1,2))),
-      Economic = names(subset(economic_filtered, select = -c(1,2))),
-      Social = names(subset(social_filtered, select = -c(1,2))),
-      Human = names(subset(human_filtered, select = -c(1,2))),
-      Environment = names(subset(environment_filtered, select = -c(1,2)))),
+      Production = prodList,
+      Economic = econoList,
+      Social = socialList,
+      Human = humanList,
+      Environment = enviroList),
     multiple = TRUE)
   
 })
@@ -270,12 +295,13 @@ output$morsumbar <- renderUI({
   
 })
 
+list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
 output$dataBar <- renderUI({
   
   shinyWidgets::pickerInput(
     inputId = "dataBar",
     label = h6("Select what data you want to visualize on Bar plot:"),
-    choices = names(subset(placeBase,select = -c(1,2))))
+    choices = list)
   
 })
 
@@ -289,7 +315,6 @@ output$dataBar <- renderUI({
 conditionalPanel(condition = "input.tabselected==6",
                 uiOutput("placesBox"),
                 uiOutput("yearBox"),
-                h6("Mean or sum of data between those years:"),
                 uiOutput("dataBox")
               )
 
@@ -314,19 +339,20 @@ output$yearBox <- renderUI({
     group_by(Year = eval(parse(text = year)))
   
   selectizeInput("yearBox",
-                   h6("Choose years below which you want to correlate"),
+                   h6("Choose years below which you want to visualize"),
                    choices = c("Choose your years" = '',
                                choice$Year),
                    multiple = TRUE)
   
 })
 
+list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
 output$dataBox <- renderUI({
   
   shinyWidgets::pickerInput(
     inputId = "dataBox",
     label = h6("Select what data you want to visualize on Box plot:"),
-    choices = names(subset(placeBase,select = -c(1,2))))
+    choices = list)
   
 })
 
@@ -380,11 +406,14 @@ filterCor <- reactive({
   
 })
 
+
 output$dataCor <- renderUI({
+  
+  list <- gsub("\\.", " ", names(subset(filterCor(),select = -c(1,2))))
   
   shinyWidgets::pickerInput(inputId = "dataCor",
                             label = h6("Select what data you want to correlate: (up to 9 variables)"),
-                            choices = names(subset(filterCor(),select = -c(1,2))),
+                            choices = list,
                             multiple = TRUE,
                             options = list(maxItems = 9)
         )
@@ -435,11 +464,13 @@ output$yearLine <- renderUI({
   
 })
 
+list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
+
 output$dataLine <- renderUI({
   
-  varSelectInput("dataLine",
+  selectInput("dataLine",
                      h6("Select what data you want to correlate: "),
-                     subset(placeBase,select = -c(1,2)))
+                     list)
   
 })
 
@@ -453,7 +484,6 @@ tabsetPanel(type = "tabs",
             tabPanel(style = "margin: 15px",
                      "Map",
                      value=1,
-                     span(textOutput("maptxt"), style="text-align:center; font-weight: bold"),
                      leafletOutput("mymap"),
                       span(uiOutput("notavmap"),
                            style="text-align:center; font-weight: bold")
@@ -461,31 +491,26 @@ tabsetPanel(type = "tabs",
             tabPanel(style = "margin: 15px",
                      "SIAF",
                      value=2,
-                     span(textOutput("plottxtSIAF"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphSIAF")
             ),
             tabPanel(style = "margin: 15px",
                      "Correlation Matrix",
                      value=4,
-                     span(textOutput("plottxtCor"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphCor")
             ),
             tabPanel(style = "margin: 15px",
                      "Line Chart",
                      value=5,
-                     span(textOutput("plottxtLine"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphLine")
             ),
             tabPanel(style = "margin: 15px",
                      "Bar Chart",
                      value=3,
-                     span(textOutput("plottxtBar"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphBar")
             ),
             tabPanel(style = "margin: 15px",
                      "Box Chart",
                      value=6,
-                     span(textOutput("plottxtBox"),style="text-align:center; font-weight: bold"),
                      plotlyOutput("graphBox")
             )
           )
@@ -500,7 +525,7 @@ dataInput <- reactive({
   
   placeOrder <- unique(placeBase[,1])
   
-  choice <- toString(input$select)
+  choice <- gsub("\\ ", ".", input$select)
   
   if(input$morsummap == TRUE){
     placeBase %>%
@@ -542,7 +567,7 @@ labels <- reactive({
 
 output$mymap <- renderLeaflet({
   
-  titulo <- toString(input$select)
+  titulo <- gsub("\\ ", ".", input$select)
   unity <- units %>%
     filter(Name == titulo)
   unidade <- toString(unity$Unit)
@@ -591,30 +616,6 @@ output$mymap <- renderLeaflet({
   
 })
 
-output$maptxt <- renderText({
-  
-  str2 = input$select
-  str3 = " from "
-  str4 = input$yearmap[1]
-  str5 = " to "
-  str6 = input$yearmap[2]
-  str1 = " of "
-  
-  if (input$yearmap[1] != input$yearmap[2]){
-    
-    result = paste(str2,str3,str4,str5,str6)
-    
-  }
-  
-  else if(input$yearmap[1] == input$yearmap[2]){
-    
-    result = paste(str2,str1,str4)
-    
-  }
-  
-  result
-  
-})
 
 output$notavmap <- renderText({
   
@@ -635,7 +636,7 @@ output$notavmap <- renderText({
 dataInputGraphSIAF <- reactive({
   place <- toString(names(subset(placeBase, select = c(1))))
   period <- toString(names(subset(placeBase, select = c(2))))
-  
+  valores <- gsub("\\ ", ".", input$dataSIAF)
   
   if(input$placeoryearSIAF == "MD"){
     
@@ -643,7 +644,7 @@ dataInputGraphSIAF <- reactive({
       filter(eval(parse(text = place)) %in% input$selectplacesSIAF,
              eval(parse(text = period)) %in% input$yearSIAF) %>%
       group_by(Places = eval(parse(text = place))) %>%
-      summarise_at(vars(input$dataSIAF), mean, na.rm=TRUE) %>%
+      summarise_at(vars(valores), mean, na.rm=TRUE) %>%
       ungroup() %>%
       mutate_at(vars(-Places), scales::rescale)
     
@@ -655,7 +656,7 @@ dataInputGraphSIAF <- reactive({
       filter(eval(parse(text = place)) == input$selectplacesSIAF,
              eval(parse(text = period)) %in% input$yearSIAF) %>%
       group_by(Years = eval(parse(text = period))) %>%
-      summarise_at(vars(input$dataSIAF), mean, na.rm=TRUE) %>%
+      summarise_at(vars(valores), mean, na.rm=TRUE) %>%
       ungroup() %>%
       mutate_at(vars(-Years), scales::rescale)
     
@@ -668,8 +669,8 @@ output$graphSIAF <- renderPlotly({
   graph <- dataInputGraphSIAF() %>%
       ggradar(
         font.radar = "roboto",
-        grid.label.size = 2.5,
-        axis.label.size = 3,
+        grid.label.size = 4,
+        axis.label.size = 4,
         group.point.size = 3
       ) +
     theme(
@@ -687,42 +688,7 @@ output$graphSIAF <- renderPlotly({
   
 })
 
-output$plottxtSIAF <- renderText({
-  
-  str2 = "Radar Plot "
-  str7 = toString(input$selectfgraphSIAF)
-  str3 = "from "
-  str4 = input$yearSIAF[1]
-  str5 = " to "
-  str6 = input$yearSIAF[2]
-  str1 = "of "
-  str8 = input$selectplacesSIAF
-  
-  if(input$placeoryearSIAF == "MD"){
-    
-    if (input$yearSIAF[1] != input$yearSIAF[2]){
-      
-      result = paste(str2, str3, str4, str5, str6)
-      
-    }
-    
-    else if(input$yearSIAF[1] == input$yearSIAF[2]){
-      
-      result = paste(str2, str1, str4)
-      
-    }
-    
-  }
-  
-  else if(input$placeoryearSIAF == "SD"){
-    
-    result = paste(str2,str3,str8)
-    
-  }
-  
-  result
-  
-})
+
   
 ```
 
@@ -732,8 +698,8 @@ output$plottxtSIAF <- renderText({
 dataInputBar <- reactive({
   place <- toString(names(subset(placeBase, select = c(1))))
   period <- toString(names(subset(placeBase, select = c(2))))
-  choiceG <- toString(input$dataBar)
-  
+
+  choiceG <- gsub("\\ ", ".", input$dataBar)
   if(input$morsumbar == TRUE){
     placeBase %>%
       filter(eval(parse(text = place)) %in% input$placesBar,
@@ -755,8 +721,10 @@ dataInputBar <- reactive({
 output$graphBar <- renderPlotly({
   
   choiceD <- toString(input$dataBar)
+  
+  titulo <- gsub("\\ ", ".", input$dataBar)
   unity <- units %>%
-      filter(Name == choiceD)
+      filter(Name == titulo)
   unidade <- toString(unity$Unit)
   
   legend <- paste(choiceD, "(", unidade, ")")
@@ -779,30 +747,7 @@ output$graphBar <- renderPlotly({
   
 })
 
-output$plottxtBar <- renderText({
-  
-  str2 = "Bar Chart"
-  str7 = toString(input$dataBar)
-  str3 = " from "
-  str4 = input$yearBar[1]
-  str5 = " to "
-  str6 = input$yearBar[2]
-  str1 = " of "
-  
-  if (input$yearBar[1] != input$yearBar[2]){
-    
-    result = paste(str2,str1,str7,str3,str4,str5,str6)
-    
-  }
-  
-  else if(input$yearBar[1] == input$yearBar[2]){
-    
-    result = paste(str2,str1,str7,str1,str4)
-    
-  }
-  
-  result
-})
+
 
 ```
 
@@ -813,7 +758,8 @@ output$plottxtBar <- renderText({
 dataInputBox <- reactive({
   place <- toString(names(subset(placeBase, select = c(1))))
   period <- toString(names(subset(placeBase, select = c(2))))
-  choiceG <- toString(input$dataBox)
+
+  choiceG <- gsub("\\ ", ".", input$dataBox)
   
   placeBase %>%
     filter(eval(parse(text = place)) %in% input$placesBox,
@@ -827,6 +773,13 @@ dataInputBox <- reactive({
 output$graphBox <- renderPlotly({
   
   choiceD <- toString(input$dataBox)
+
+  titulo <- gsub("\\ ", ".", input$dataBox)
+  unity <- units %>%
+      filter(Name == titulo)
+  unidade <- toString(unity$Unit)
+  
+  legend <- paste(choiceD, "(", unidade, ")")
   
   boxPlot <- ggplot(dataInputBox(), aes(x=Places, y=Data, color=Places))+
                 geom_boxplot(notch=TRUE)+
@@ -837,36 +790,13 @@ output$graphBox <- renderPlotly({
                   plot.background = element_rect(fill = "#dbd9d9"),
                   axis.title.y = element_text(size = 8)
                 )+
-                labs(y = choiceD)
+                labs(y = legend)
   
   ggplotly(boxPlot)
   
 })
 
-output$plottxtBox <- renderText({
-  
-  str2 = "Box Chart"
-  str7 = toString(input$dataBox)
-  str3 = " from "
-  str4 = input$yearBox[1]
-  str5 = " to "
-  str6 = input$yearBox[2]
-  str1 = " of "
-  
-  if (input$yearBox[1] != input$yearBox[2]){
-    
-    result = paste(str2,str1,str7,str3,str4,str5,str6)
-    
-  }
-  
-  else if(input$yearBox[1] == input$yearBox[2]){
-    
-    result = paste(str2,str1,str7,str1,str4)
-    
-  }
-  
-  result
-})
+
 
 ```
 
@@ -874,10 +804,12 @@ output$plottxtBox <- renderText({
 ####### Correlation Output
 
 dataInputCor <- reactive({
-    
+  
+  
+  
   place <- toString(names(subset(filterCor(), select = c(1))))
   period <- toString(names(subset(filterCor(), select = c(2))))
-  choicesD <- as.character(input$dataCor)
+  choicesD <- gsub("\\ ", ".", input$dataCor)
   
   filterCor() %>%
     group_by(Places = eval(parse(text = place)))%>%
@@ -909,19 +841,6 @@ output$graphCor <- renderPlotly({
   
 })
 
-output$plottxtCor <- renderText({
-  
-  str2 = "Correlation Matrix"
-  str1 = " of "
-  str7 = toString(input$dataCor)
-  str3 = " from "
-  str4 = toString(input$yearCor[1])
-  str5 = " to "
-  str6 = toString(input$yearCor[2])
-  
-  result = paste(str2,str1,str7,str3,str4,str5,str6)
-  
-})
 
 ```
 
@@ -932,22 +851,23 @@ dataInputLine <- reactive({
     
   place <- toString(names(subset(placeBase, select = c(1))))
   period <- toString(names(subset(placeBase, select = c(2))))
-  choicesD <- as.character(input$dataLine)
+  choicesD <- gsub("\\ ", ".", input$dataLine)
   
   placeBase %>%
     filter(eval(parse(text = place)) %in% input$placesLine,
            between(eval(parse(text = period)), input$yearLine[1], input$yearLine[2])) %>%
     group_by(Year = eval(parse(text = period)),
              Districts = eval(parse(text = place))) %>%
-    select(Data = choicesD)
+    select(Data = as.name(choicesD))
 
 })
 
 output$graphLine <- renderPlotly({
   
   choiceD <- toString(input$dataLine)
+  titulo <- gsub("\\ ", ".", input$dataLine)
   unity <- units %>%
-      filter(Name == choiceD)
+      filter(Name == titulo)
   unidade <- toString(unity$Unit)
   
   legend <- paste(choiceD, "(", unidade, ")")
@@ -966,31 +886,7 @@ output$graphLine <- renderPlotly({
   
 })
 
-output$plottxtLine <- renderText({
-  
-  str2 = "Line Chart"
-  str7 = toString(input$dataLine)
-  str3 = " from "
-  str4 = input$yearLine[1]
-  str5 = " to "
-  str6 = input$yearLine[2]
-  str1 = " of "
-  
-  if (input$yearLine[1] != input$yearLine[2]){
-    
-    result = paste(str2,str1,str7,str3,str4,str5,str6)
-    
-  }
-  
-  else if(input$yearLine[1] == input$yearLine[2]){
-    
-    result = paste(str2,str1,str7,str1,str4)
-    
-  }
-  
-  result
-  
-})
+
 
 ```
 
@@ -1002,7 +898,7 @@ h2("Data: ", style="margin: 10px;")
 
 output$downloadData <- downloadHandler(
   filename = "SenegalDataset.csv",
-  content = function(file) {write.csv(placeBase, file, row.names = FALSE)}
+  content = function(file) {write.csv(dataWithUnits, file, row.names = FALSE)}
 )
 
 renderUI({
@@ -1015,51 +911,56 @@ renderUI({
 
 
 DT::dataTableOutput("dataInput",
-                    height = "150em",
-                    width = "78em")
+                    height = "150em")
 
-output$dataInput <- DT::renderDataTable({placeBase},options = list(pageLength = 10,
+output$dataInput <- DT::renderDataTable({dataWithUnits},options = list(pageLength = 10,
                                                                    scrollX = TRUE))
 
 ```
 
 # About
 
-## Images & Links {data-width="50"}
-
-<a href = "https://www.siildigitalagconsortium.com"><img src="logo_consortium.png" height="120" width="120"/></a>
-
-<h6>Digital Tools, Geospatial and Farming Systems Consortium</h6>
-
-## About-text {data-width="600"}
-
 ### Description
 
-```{r}
-p (style="text-align: justify; padding: 20px", "A recent study within our team (Brown et al, under review) quantified the lack of connection between the different Sustainable Intensification Framework Domains in the current and most cited research.
-Therefore, we propose the design of an Integration Platform, to facilitate the visualization of interactions between the different Sustainable Intensification Framework Domain available data-layers.
+<p style="text-align: justify; padding: 20px"> A recent study within our team (Brown et al, under review) quantified the lack of connection between the different <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> Sustainable Intensification Framework Domains </a> in the current and most cited research.
+Therefore, we propose the design of an Integration Platform, to facilitate the visualization of interactions between the different Sustainable Intensification Framework Domain (SIAF) available data-layers.
 This platform aggregates and summarizes the outcomes of our team projects and open-data sources.
-This tool will serve as a Sustainable Intensification Framework application, employing Senegal as a case study, allowing the comparison between districts.")
-h3 (style="padding: 10px", "What is SIAF: ")
-h5 (style="padding: 10px", "Productivity: ")
-p (style="text-align: justify; padding: 20px", "Increasing productivity is the essential characteristic of intensification, with the goal of increasing output per unit input per unit time (season or year). Following the SI literature, this domain focuses on land as a critical input, land degradation, and threatened biodiversity from loss of natural habitat. Intensification using inputs other than land (such as labor, fertilizer and capital) is captured in the economic domain.")
-h5 (style="padding: 10px", "Economic: ")
-p (style="text-align: justify; padding: 20px", "This domain focuses on issues directly related to the profitability of agricultural activities and returns to factors of production. In addition to profitability, this domain includes indicators related to the productivity of inputs apart from land: water, nutrients, labor and capital. Furthermore, indicators likely to affect the probability of investment in enhancing productivity (market participation) are included.")
-h5 (style="padding: 10px", "Environment: ")
-p (style="text-align: justify; padding: 20px", "This domain focuses on the natural resource base that supports agriculture (e.g., soil, water), the environmental services directly affected by agricultural practices (e.g., habitat, water-holding capacity), and the level of pollution resulting from agriculture (pesticides, greenhouse gases).")
-h5 (style="padding: 10px", "Human condition: ")
-p (style="text-align: justify; padding: 20px", "This domain contains indicators pertaining to the individual or household, including nutrition status, food security, and capacity to learn and adapt. These indicators affect an individual and do not require social interaction or interpersonal relationships. While these factors are dependent on social interactions (such as within the household or community), they are distinct from those in the social domain which directly focus on interpersonal relationships.")
-h5 (style="padding: 10px", "Social: ")
-p (style="text-align: justify; padding: 20px", "This domain focuses on social interactions: equitable relationships across gender within the household, equitable relationships across social groups in a community or landscape, the level of collective action, and the ability to resolve conflicts related to agriculture and natural resource management.")
-h3 (style="padding: 10px", "Authors: ")
-p (style="text-align: justify; padding: 20px", "")
-h3 (style="padding: 10px", "How to cite this app: ")
-p (style="text-align: justify; padding: 20px"," *Citation of paper *")
+This tool will serve as a Sustainable Intensification Framework application, employing Senegal as a case study, allowing the comparison between districts. </p>
+<a href="https://www.siildigitalagconsortium.com/"> <h6 style="padding: 10px"> Click here to learn more about the Digital Tools, Geospatial and Farming Systems Consortium</h6></a>
+<h3 style="padding: 10px"> The five domains of Sustainable Intensification: </h3>
+<h5 style="padding: 10px"> Productivity: This domain is focused in everything about the land, production, productivity, outputs and inputs.</h5>
+<h5 style="padding: 10px"> Economic: This is the domain related to profitability of agricultural activities and their indicators apart from land, such as: water, nutrients, labor and capital. Also, issues that may affect the probability of investment i.e. market participation are in this domain</h5>
+<h5 style="padding: 10px"> Environment: Natural resources that supports agriculture (i.e. soil and water), environmental services affected by agricultural practices (i.e. habitat, water-holding capacity), and pollution which main source is agriculture (pesticides and greenhouse gases) fit in this domain. </h5>
+<h5 style="padding: 10px"> Human condition: Nutrition status, food security and capacity to learn and adapt, in other words, everything that affects one individual.</h5>
+<h5 style="padding: 10px"> Social: Here are the social interactions such as female participation, gender equality, ability to resolve conflicts related to agriculture and management of resources.</p>
+<a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> <h6 style="padding: 10px"> Click here to learn more about SIAF</h6></a>
+<h3 style="padding: 10px"> Authors:</h3>
+<p style="text-align: justify; padding: 20px">Santiago, G.; Carcedo, A. J.; Brown, M.; Grace, K.; Nejadhashemi, A.; Ciampitti, I.; Neff, J.</p>
 
-```
+
 
 # Data Source
 
 ```{r}
+h2("Data Source: ", style="margin: 10px;")
 
+output$downloaddataSource <- downloadHandler(
+  filename = "dataSource.csv",
+  content = function(file) {write.csv(dataSource, file, row.names = FALSE)}
+)
+
+renderUI({
+  
+  downloadButton("downloaddataSource",
+                 "Download Senegal data source",
+                 style="margin: 10px;")
+})
+
+
+
+DT::dataTableOutput("dataInputSource",
+                    height = "150em")
+
+output$dataInputSource <- DT::renderDataTable({dataSource},options = list(pageLength = 10,
+                                                                          scrollX = TRUE))
 ```

@@ -1,0 +1,65 @@
+Peanut,Peanut
+Cowpea,Cowpea
+Cassava,Cassava
+Millet,Millet
+Maize,Maize
+Sorghum,Sorghum
+Rice,Rice
+Sheeps,Sheeps
+Chickens,Chickens
+Assins,Assins
+Cows,Cows
+Goats,Goats
+Lower quintiles HH,Lower.quintiles.HH
+Upper quintiles HH,Upper.quintiles.HH
+Gini coefficient,Gini.coefficient
+Price_imported Maize,Price_imported.Maize
+Price_imported PB rice,Price_imported.PB.rice
+Price_imported FB rice,Price_imported.FB.rice
+Price_local Peanut Kernels,Price_local.Peanut.Kernels
+Price_local uns  peanut,Price_local.uns..peanut
+Price_local Maize,Price_local.Maize
+Price_local Millet,Price_local.Millet
+Price_local Cowpea,Price_local.Cowpea
+Price_local Sorghum,Price_local.Sorghum
+Producer price_H  rice,Producer.price_H..rice
+Producer price_uns  Peanut,Producer.price_uns..Peanut
+Producer price_Millet,Producer.price_Millet
+Producer price_Sorghum,Producer.price_Sorghum
+Producer price s  peanut,Producer.price.s..peanut
+Producer price_Maize,Producer.price_Maize
+Producer price_Cowpea,Producer.price_Cowpea
+Less -3 ET_Size Age,Less.-3.ET_Size.Age
+Less -2 ET_Size Age,Less.-2.ET_Size.Age
+Avg RCS (ET)_Size Age,Avg.RCS.(ET)_Size.Age
+Less -3 ET_Weight Height,Less.-3.ET_Weight.Height
+Less -2 ET_Weight Height,Less.-2.ET_Weight.Height
+Less +2 ET_Weight Height,Less.+2.ET_Weight.Height
+Avg RCS (ET)_Weight Height,Avg.RCS.(ET)_Weight.Height
+Less -3 ET_Weight Age,Less.-3.ET_Weight.Age
+Less -2 ET_Weight Age,Less.-2.ET_Weight.Age
+Less  +2 ET_Weight Age,Less..+2.ET_Weight.Age
+Avg RCS (ET)_Weight Age,Avg.RCS.(ET)_Weight.Age
+Neonatal mortality,Neonatal.mortality
+Post-neonatal mortality,Post-neonatal.mortality
+Child mortality,Child.mortality
+Juvenile mortality,Juvenile.mortality
+Child-juvenile mortality ,Child-juvenile.mortality.
+Electricity,Electricity
+Time to get water,Time.to.get.water
+Wealth factor,Wealth.factor
+HH heads w/o formal education,HH.heads.w/o.formal.education
+Literacy rt of hh heads,Literacy.rt.of.hh.heads
+Female head of hh,Female.head.of.hh
+FEI,FEI
+Insecticide use,Insecticide.use
+Irrigation use,Irrigation.use
+Husbandry,Husbandry
+Avg hh size,Avg.hh.size
+Fertilizer Use,Fertilizer.Use
+Herbicide use,Herbicide.use
+GDD,GDD
+SMI,SMI
+VGI,VGI
+WDI,WDI
+Precipitation,Precipitation
