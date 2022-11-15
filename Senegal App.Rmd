@@ -35,6 +35,7 @@ library(plotly)
 library(DT)
 library(sf)
 library(readxl)
+library(yarrr)
 ```
 
 ```{css my-content, echo = FALSE}
@@ -67,8 +68,9 @@ dataWithUnits <- read.csv("Data/dataWithUnits.csv", sep = ",", dec = ".", check.
 ### Instructions
 
 ```{r}
-p(style="text-align: center","******* A video will be included here *******")
+HTML('<iframe width="1400" height="600" src = "https://www.youtube.com/embed/A5NL0KVIw2Y" frameborder="0" allowfullscreen></iframe>')
 ```
+
 
 # Visualization
 
@@ -228,15 +230,27 @@ output$dataSIAF <- renderUI({
   humanList <- gsub("\\.", " ", names(subset(human_filtered, select = -c(1,2))))
   enviroList <- gsub("\\.", " ", names(subset(environment_filtered,select = -c(1,2))))
   
+  lista <- list()
+  if(length(prodList)){
+    lista <- append(lista, list(Production = prodList))
+  }
+  if(length(econoList)){
+    lista <- append(lista, list(Economic = econoList))
+  }
+  if(length(socialList)){
+    lista <- append(lista, list(Social = socialList))
+  }
+  if(length(humanList)){
+    lista <- append(lista, list(Human = humanList))
+  }
+  if(length(enviroList)){
+    lista <- append(lista, list(Environment = enviroList))
+  }
+  
   shinyWidgets::pickerInput(
     inputId = "dataSIAF",
     label = h6("Select what data you want to visualize on radar plot:"),
-    choices = list(
-      Production = prodList,
-      Economic = econoList,
-      Social = socialList,
-      Human = humanList,
-      Environment = enviroList),
+    choices = lista,
     multiple = TRUE)
   
 })
@@ -484,34 +498,40 @@ tabsetPanel(type = "tabs",
             tabPanel(style = "margin: 15px",
                      "Map",
                      value=1,
-                     leafletOutput("mymap"),
+                     leafletOutput("mymap",
+                                  height = 600),
                       span(uiOutput("notavmap"),
                            style="text-align:center; font-weight: bold")
             ),
             tabPanel(style = "margin: 15px",
                      "SIAF",
                      value=2,
-                     plotlyOutput("graphSIAF")
+                     plotlyOutput("graphSIAF",
+                                  height = 600)
             ),
             tabPanel(style = "margin: 15px",
                      "Correlation Matrix",
                      value=4,
-                     plotlyOutput("graphCor")
+                     plotlyOutput("graphCor",
+                                  height = 600)
             ),
             tabPanel(style = "margin: 15px",
                      "Line Chart",
                      value=5,
-                     plotlyOutput("graphLine")
+                     plotlyOutput("graphLine",
+                                  height = 600)
             ),
             tabPanel(style = "margin: 15px",
                      "Bar Chart",
                      value=3,
-                     plotlyOutput("graphBar")
+                     plotlyOutput("graphBar",
+                                  height = 600)
             ),
             tabPanel(style = "margin: 15px",
                      "Box Chart",
                      value=6,
-                     plotlyOutput("graphBox")
+                     plotlyOutput("graphBox",
+                                  height = 600)
             )
           )
 ```
@@ -666,13 +686,20 @@ dataInputGraphSIAF <- reactive({
 
 output$graphSIAF <- renderPlotly({
   
-  graph <- dataInputGraphSIAF() %>%
-      ggradar(
-        font.radar = "roboto",
-        grid.label.size = 4,
-        axis.label.size = 4,
-        group.point.size = 3
-      ) +
+  lista <- gsub("\\.", " ", colnames(dataInputGraphSIAF())[-1])
+  
+  paleta <- brewer.pal(n = 8, name = "Spectral")
+  paletaTransparente <- yarrr::transparent(paleta, .35)
+  
+  graph <-  dataInputGraphSIAF() %>%
+    ggradar(
+      font.radar = "roboto",
+      grid.label.size = 4,
+      axis.label.size = 4,
+      group.point.size = 1.8,
+      axis.labels = lista,
+      group.colours = paletaTransparente
+    ) +
     theme(
         plot.background = element_rect(fill = "#dbd9d9"),
         panel.background = element_rect(fill = "#dbd9d9"),
@@ -680,10 +707,9 @@ output$graphSIAF <- renderPlotly({
         legend.justification = c(1, 0),
         legend.text = element_text(size = 8, family = "roboto"),
         legend.key = element_rect(fill = NA, color = NA),
-        legend.background = element_blank(),
-        axis.text = element_text(hjust=0.5, vjust = 1)
-      )
-  
+        legend.background = element_blank()
+        )
+
   ggplotly(graph, tooltip = "")
   
 })
@@ -740,8 +766,8 @@ output$graphBar <- renderPlotly({
                   axis.title.y = element_text(size = 8)
                 )+
                 labs(y = legend)+
-                labs(x = "Districts")
-    scale_y_continuous(labels = comma)
+                labs(x = "Districts")+
+                scale_y_continuous(labels = comma)
   
   ggplotly(barPlot)
   
@@ -790,7 +816,8 @@ output$graphBox <- renderPlotly({
                   plot.background = element_rect(fill = "#dbd9d9"),
                   axis.title.y = element_text(size = 8)
                 )+
-                labs(y = legend)
+                labs(y = legend)+
+        scale_y_continuous(labels = comma)
   
   ggplotly(boxPlot)
   
@@ -821,6 +848,7 @@ output$graphCor <- renderPlotly({
   
   corGraph <- dataInputCor()
   corGraph[,1] <- NULL
+  colnames(corGraph) <- gsub("\\.", " ", colnames(corGraph))
   corr <- round(cor(corGraph), 1)
   
   corPlot <- ggcorrplot(corr,
@@ -830,9 +858,9 @@ output$graphCor <- renderPlotly({
                         lab_size = 2,
                         show.diag = TRUE,
                         colors = c("red", "white","blue")) +
-    theme(axis.text.x=element_text(size=7, angle=45, vjust=1, hjust=1, 
+    theme(axis.text.x=element_text(size=9, angle=45, vjust=1, hjust=1, 
                                    margin=margin(-3,0,0,0)),
-          axis.text.y=element_text(size=7, margin=margin(-3,0,0,0)),
+          axis.text.y=element_text(size=9),
           panel.grid.major=element_blank(),
           plot.background = element_rect(fill = "#dbd9d9"),
           panel.background = element_rect(fill = "#dbd9d9")) 
