@@ -156,10 +156,9 @@ output$selectplacesSIAF <- renderUI({
     
     selectizeInput("selectplacesSIAF",
                    h6("Places you want to visualize on graph:"),
-                   choices = c("Choose up to 10 Districts" = '',
+                   choices = c("Choose Districts" = '',
                                choice$States),
-                   multiple = TRUE,
-                   options = list(maxItems = 10))
+                   multiple = TRUE)
   }
   
   else if(input$placeoryearSIAF == "SD"){
@@ -287,10 +286,9 @@ output$placesBar <- renderUI({
     
     selectizeInput("placesBar",
                    h6("Places you want to visualize on graph:"),
-                   choices = c("Choose up to 10 Districts" = '',
+                   choices = c("Choose Districts" = '',
                              choice$States),
-                   multiple = TRUE,
-                   options = list(maxItems = 10))
+                   multiple = TRUE)
     
   })
   
@@ -363,10 +361,9 @@ output$placesBox <- renderUI({
     
     selectizeInput("placesBox",
                    h6("Districts you want to visualize on graph:"),
-                   choices = c("Choose up to 10 Districts" = '',
+                   choices = c("Choose Districts" = '',
                              choice$States),
-                   multiple = TRUE,
-                   options = list(maxItems = 10))
+                   multiple = TRUE)
     
   })
 
@@ -450,10 +447,9 @@ output$dataCor <- renderUI({
   list <- gsub("\\.", " ", names(subset(filterCor(),select = -c(1,2))))
   
   shinyWidgets::pickerInput(inputId = "dataCor",
-                            label = h6("Select what data you want to correlate: (up to 9 variables)"),
+                            label = h6("Select what data you want to correlate: "),
                             choices = list,
-                            multiple = TRUE,
-                            options = list(maxItems = 9)
+                            multiple = TRUE
         )
   
 })
@@ -489,10 +485,9 @@ output$placesLine <- renderUI({
   if(input$distOrVarLine == "CDL"){
     selectizeInput("placesLine",
                  h6("Places you want to visualize on graph:"),
-                 choices = c("Choose up to 10 Districts" = '',
+                 choices = c("Choose Districts" = '',
                              choice$States),
-                 multiple = TRUE,
-                 options = list(maxItems = 10))
+                 multiple = TRUE)
   }
   else if(input$distOrVarLine == "CVL"){
     selectInput("placesLine",
@@ -533,10 +528,9 @@ output$dataLine <- renderUI({
   else if(input$distOrVarLine == "CVL"){
     selectizeInput("dataLine",
                  h6("Select what data you want to visualize:"),
-                 choices = c("Choose up to 10 Variables" = '',
+                 choices = c("Choose Variables" = '',
                              list),
-                 multiple = TRUE,
-                 options = list(maxItems = 10))
+                 multiple = TRUE)
   }
 
 })
