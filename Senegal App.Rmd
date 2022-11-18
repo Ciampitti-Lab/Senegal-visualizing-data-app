@@ -36,6 +36,8 @@ library(DT)
 library(sf)
 library(readxl)
 library(yarrr)
+library(reshape2)
+library(tidyverse)
 ```
 
 ```{css my-content, echo = FALSE}
@@ -260,12 +262,23 @@ output$dataSIAF <- renderUI({
 ####### Bar Filter
 
 conditionalPanel(condition = "input.tabselected==3",
-                uiOutput("placesBar"),
-                uiOutput("yearBar"),
-                h6("Mean or sum of data between those years:"),
-                uiOutput("morsumbar"),
-                uiOutput("dataBar")
+                 uiOutput("placesBar"),
+                  uiOutput("yearBar"),
+                  h6("Mean or sum of data between those years:"),
+                  uiOutput("morsumbar"),
+                  uiOutput("stackBar"),
+                  uiOutput("dataBar")
               )
+
+output$stackBar <- renderUI({
+  
+  selectInput("stackBar",
+               h6("Do you want to stack you bar plot?"),
+               choices = c("Yes" = "yes",
+                           "No" = "no")
+  )
+  
+})
 
 output$placesBar <- renderUI({
     place <- toString(names(subset(placeBase, select = c(1))))
@@ -312,10 +325,21 @@ output$morsumbar <- renderUI({
 list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
 output$dataBar <- renderUI({
   
-  shinyWidgets::pickerInput(
+  if(input$stackBar == "yes"){
+    shinyWidgets::pickerInput(
     inputId = "dataBar",
     label = h6("Select what data you want to visualize on Bar plot:"),
-    choices = list)
+    choices = list,
+    multiple = TRUE
+    )
+  }
+  else if(input$stackBar == "no"){
+    shinyWidgets::pickerInput(
+    inputId = "dataBar",
+    label = h6("Select what data you want to visualize on Bar plot:"),
+    choices = list
+    )
+  }
   
 })
 
@@ -440,10 +464,21 @@ output$dataCor <- renderUI({
 ####### Line Filter
 
 conditionalPanel(condition = "input.tabselected==5",
+                 uiOutput("distOrVarLine"),
                 uiOutput("placesLine"),
                 uiOutput("yearLine"),
                 uiOutput("dataLine")
               )
+
+output$distOrVarLine <- renderUI({
+  
+  selectInput("distOrVarLine",
+               h6("Compare between districts or between variables"),
+               choices = c("Compare Districts" = "CDL",
+                           "Compare Variables" = "CVL")
+  )
+  
+})
 
 output$placesLine <- renderUI({
     
@@ -451,12 +486,20 @@ output$placesLine <- renderUI({
   choice <- placeBase %>%
     group_by(States = eval(parse(text = place)))
   
-  selectizeInput("placesLine",
+  if(input$distOrVarLine == "CDL"){
+    selectizeInput("placesLine",
                  h6("Places you want to visualize on graph:"),
                  choices = c("Choose up to 10 Districts" = '',
                              choice$States),
                  multiple = TRUE,
                  options = list(maxItems = 10))
+  }
+  else if(input$distOrVarLine == "CVL"){
+    selectInput("placesLine",
+                 h6("Places you want to visualize on graph:"),
+                 choices = c("Choose one district" = '',
+                             choice$States))
+  }
   
 })
   
@@ -482,10 +525,20 @@ list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
 
 output$dataLine <- renderUI({
   
-  selectInput("dataLine",
-                     h6("Select what data you want to correlate: "),
+  if(input$distOrVarLine == "CDL"){
+    selectInput("dataLine",
+                     h6("Select what data you want to visualize: "),
                      list)
-  
+  }
+  else if(input$distOrVarLine == "CVL"){
+    selectizeInput("dataLine",
+                 h6("Select what data you want to visualize:"),
+                 choices = c("Choose up to 10 Variables" = '',
+                             list),
+                 multiple = TRUE,
+                 options = list(maxItems = 10))
+  }
+
 })
 
 ```
@@ -574,7 +627,7 @@ pale <- reactive({
 })
 
 labels <- reactive({
-  titulo <- toString(input$select)
+  titulo <- gsub("\\ ", ".", input$select)
   unity <- units %>%
     filter(Name == titulo)
   unidade <- toString(unity$Unit)
@@ -726,21 +779,48 @@ dataInputBar <- reactive({
   period <- toString(names(subset(placeBase, select = c(2))))
 
   choiceG <- gsub("\\ ", ".", input$dataBar)
-  if(input$morsumbar == TRUE){
-    placeBase %>%
-      filter(eval(parse(text = place)) %in% input$placesBar,
-             between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
-      group_by(Places = eval(parse(text = place))) %>%
-      summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE))
+  if(input$stackBar == "yes"){
+    
+    if(input$morsumbar == TRUE){
+      placeBase %>%
+        filter(eval(parse(text = place)) %in% input$placesBar,
+               between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+        group_by(Places = eval(parse(text = place))) %>%
+        summarise_at(vars(choiceG), mean, na.rm=TRUE)%>%
+        mutate_at(vars(choiceG), scales::rescale)
+      
+    }
+    else if(input$morsumbar == FALSE){
+      placeBase %>%
+        filter(eval(parse(text = place)) %in% input$placesBar,
+               between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+        group_by(Places = eval(parse(text = place))) %>%
+        summarise_at(vars(choiceG), sum, na.rm=TRUE) %>%
+        mutate_at(vars(choiceG), scales::rescale)
+      
+    }
+    
   }
-  else if(input$morsumbar == FALSE){
-    placeBase %>%
-      filter(eval(parse(text = place)) %in% input$placesBar,
-             between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
-      group_by(Places = eval(parse(text = place))) %>%
-      summarise(Data = sum(eval(parse(text = choiceG)), na.rm=TRUE))
+  else if(input$stackBar == "no"){
+    
+    if(input$morsumbar == TRUE){
+      placeBase %>%
+        filter(eval(parse(text = place)) %in% input$placesBar,
+               between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+        group_by(Places = eval(parse(text = place))) %>%
+        summarise(Data = mean(eval(parse(text = choiceG)), na.rm=TRUE))
+      
+    }
+    else if(input$morsumbar == FALSE){
+      placeBase %>%
+        filter(eval(parse(text = place)) %in% input$placesBar,
+               between(eval(parse(text = period)), input$yearBar[1], input$yearBar[2])) %>%
+        group_by(Places = eval(parse(text = place))) %>%
+        summarise(Data = sum(eval(parse(text = choiceG)), na.rm=TRUE))
+      
+    }
+    
   }
-  
   
 })
 
@@ -748,32 +828,54 @@ output$graphBar <- renderPlotly({
   
   choiceD <- toString(input$dataBar)
   
-  titulo <- gsub("\\ ", ".", input$dataBar)
-  unity <- units %>%
-      filter(Name == titulo)
-  unidade <- toString(unity$Unit)
-  
-  legend <- paste(choiceD, "(", unidade, ")")
-  
-  barPlot <- ggplot(dataInputBar(), aes(x=Places, y=Data))+
-                geom_bar(stat="identity", color="#253659", fill="#285585")+
-                geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
-                theme(
-                  panel.background = element_rect(fill = "#dbd9d9",
-                                                  colour = "#c7c7c9",
-                                                  size = 0.5, linetype = "solid"),
-                  plot.background = element_rect(fill = "#dbd9d9"),
-                  axis.title.y = element_text(size = 8)
-                )+
-                labs(y = legend)+
-                labs(x = "Districts")+
-                scale_y_continuous(labels = comma)
-  
-  ggplotly(barPlot)
+  if(input$stackBar == "no"){
+    titulo <- gsub("\\ ", ".", input$dataBar)
+    unity <- units %>%
+        filter(Name == titulo)
+    unidade <- toString(unity$Unit)
+    
+    legend <- paste(choiceD, "(", unidade, ")")
+    
+    barPlot <- ggplot(dataInputBar(), aes(x=Places, y=Data))+
+                  geom_bar(stat="identity", color="#253659", fill="#285585")+
+                  geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
+                  theme(
+                    panel.background = element_rect(fill = "#dbd9d9",
+                                                    colour = "#c7c7c9",
+                                                    size = 0.5, linetype = "solid"),
+                    plot.background = element_rect(fill = "#dbd9d9"),
+                    axis.title.y = element_text(size = 8)
+                  )+
+                  labs(y = legend)+
+                  labs(x = "Districts")+
+                  scale_y_continuous(labels = comma)
+    
+    ggplotly(barPlot)
+  }
+  else if(input$stackBar == "yes"){
+    
+    legend <- paste(choiceD)
+    
+    data_long <- dataInputBar() %>%
+      gather("Variables", "value", -c(Places))
+    
+    barPlot <- ggplot(data_long, aes(x=Places, y=value, group = Variables, fill=Variables))+
+                  geom_col()+
+                  theme(
+                    panel.background = element_rect(fill = "#dbd9d9",
+                                                    colour = "#c7c7c9",
+                                                    size = 0.5, linetype = "solid"),
+                    plot.background = element_rect(fill = "#dbd9d9"),
+                    axis.title.y = element_text(size = 8)
+                  )+
+                  labs(y = legend)+
+                  labs(x = "Districts")+
+                  scale_y_continuous(labels = comma)
+    
+    ggplotly(barPlot)
+  }
   
 })
-
-
 
 ```
 
@@ -881,26 +983,41 @@ dataInputLine <- reactive({
   period <- toString(names(subset(placeBase, select = c(2))))
   choicesD <- gsub("\\ ", ".", input$dataLine)
   
-  placeBase %>%
-    filter(eval(parse(text = place)) %in% input$placesLine,
-           between(eval(parse(text = period)), input$yearLine[1], input$yearLine[2])) %>%
-    group_by(Year = eval(parse(text = period)),
-             Districts = eval(parse(text = place))) %>%
-    select(Data = as.name(choicesD))
-
+  if(input$distOrVarLine == "CDL"){
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$placesLine,
+             between(eval(parse(text = period)), input$yearLine[1], input$yearLine[2])) %>%
+      group_by(Year = eval(parse(text = period)),
+               Districts = eval(parse(text = place))) %>%
+      select(Data = as.name(choicesD))
+  }
+  else if(input$distOrVarLine == "CVL"){
+    
+    
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$placesLine,
+             between(eval(parse(text = period)), input$yearLine[1], input$yearLine[2])) %>%
+      select_at(vars(choicesD, period)) %>%
+      mutate_at(vars(choicesD), scales::rescale)
+  }
+  
 })
 
 output$graphLine <- renderPlotly({
   
   choiceD <- toString(input$dataLine)
-  titulo <- gsub("\\ ", ".", input$dataLine)
-  unity <- units %>%
+  
+  
+  if(input$distOrVarLine == "CDL"){
+    
+    titulo <- gsub("\\ ", ".", input$dataLine)
+    unity <- units %>%
       filter(Name == titulo)
-  unidade <- toString(unity$Unit)
-  
-  legend <- paste(choiceD, "(", unidade, ")")
-  
-  plotLine <- ggplot(dataInputLine(), aes(x = Year, y = Data, color = Districts)) +
+    unidade <- toString(unity$Unit)
+    
+    legend <- paste(choiceD, "(", unidade, ")")
+    
+    plotLine <- ggplot(dataInputLine(), aes(x = Year, y = Data, color = Districts)) +
     geom_line()+
     theme(panel.background = element_rect(fill = "#dbd9d9"),
           plot.background = element_rect(fill = "#dbd9d9"),
@@ -912,9 +1029,27 @@ output$graphLine <- renderPlotly({
 
   ggplotly(plotLine)
   
+  }
+  else if(input$distOrVarLine == "CVL"){
+    legend <- choiceD
+    
+    data_long <- melt(dataInputLine(), id.vars="Year", variable.name = 'Variables')
+    
+    plotLine <- ggplot(data_long, aes(x = Year, y = value, colour = Variables)) +
+    geom_line()+
+    theme(panel.background = element_rect(fill = "#dbd9d9"),
+          plot.background = element_rect(fill = "#dbd9d9"),
+          axis.title.y = element_text(size = 8),
+          legend.background = element_rect(fill = "#dbd9d9"))+
+    labs(y = legend)+
+    scale_x_continuous(breaks = dataInputLine()$Year)+
+    scale_y_continuous(labels = comma)
+
+  ggplotly(plotLine)
+    
+  }
+  
 })
-
-
 
 ```
 
@@ -950,10 +1085,9 @@ output$dataInput <- DT::renderDataTable({dataWithUnits},options = list(pageLengt
 
 ### Description
 
-<p style="text-align: justify; padding: 20px"> A recent study within our team (Brown et al, under review) quantified the lack of connection between the different <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> Sustainable Intensification Framework Domains </a> in the current and most cited research.
-Therefore, we propose the design of an Integration Platform, to facilitate the visualization of interactions between the different Sustainable Intensification Framework Domain (SIAF) available data-layers.
-This platform aggregates and summarizes the outcomes of our team projects and open-data sources.
-This tool will serve as a Sustainable Intensification Framework application, employing Senegal as a case study, allowing the comparison between districts. </p>
+<p style="text-align: justify; padding: 20px"> The process of assessing the impact of agricultural interventions is a key point when deciding on future research investments and new policies. This task requires knowledge of the chain of reactions in multiple realms that occur after an intervention. Filling this critical gap, USAID’s Feed the Future Innovation Lab for Collaborative Research in Sustainable Intensification has developed the <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> Sustainable Intensification Framework Domains (SIAF) </a> to assess the impact of interventions considering five domains (productivity, economic, environmental, human and social). Until recently, however, there has been a lack of integration across the domains relative to the evaluation of agricultural interventions for different regions around the globe. </p>
+<p style="text-align: justify; padding: 20px">A recent review executed by our team identified almost no studies addressing all five domains of the SIAF simultaneously, emphasizing this lack of integration. Many challenges that result from this issue include data isolation (relevant data in multiple individual databases), scale (data with different spatial and temporal scales), and integrity (lack of complete datasets). Therefore, we propose to design an interactive dashboard to aggregate and summarize the available open-access data layers using the SIAF as a platform to facilitate the visualization of the domain interactions. Furthermore, we seek to create a unified data resource to enable integration and comparison across both spatial and temporal scales.</p>
+<p style="text-align: justify; padding: 20px">This platform targets the needs of donor-investment, policymakers, researchers and on-ground extension-specialists to support planned interventions. Lastly, this platform will serve as an example for the application of the SIAF not only for Senegal but for multiple regions around the world.</p>
 <a href="https://www.siildigitalagconsortium.com/"> <h6 style="padding: 10px"> Click here to learn more about the Digital Tools, Geospatial and Farming Systems Consortium</h6></a>
 <h3 style="padding: 10px"> The five domains of Sustainable Intensification: </h3>
 <h5 style="padding: 10px"> Productivity: This domain is focused in everything about the land, production, productivity, outputs and inputs.</h5>
@@ -963,7 +1097,7 @@ This tool will serve as a Sustainable Intensification Framework application, emp
 <h5 style="padding: 10px"> Social: Here are the social interactions such as female participation, gender equality, ability to resolve conflicts related to agriculture and management of resources.</p>
 <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> <h6 style="padding: 10px"> Click here to learn more about SIAF</h6></a>
 <h3 style="padding: 10px"> Authors:</h3>
-<p style="text-align: justify; padding: 20px">Santiago, G.; Carcedo, A. J.; Brown, M.; Grace, K.; Nejadhashemi, A.; Ciampitti, I.; Neff, J.</p>
+<p style="text-align: justify; padding: 20px">Gustavo N. Santiago, Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A. Pouyan Nejadhashemi and Ignacio A. Ciampitti</p>
 
 
 
