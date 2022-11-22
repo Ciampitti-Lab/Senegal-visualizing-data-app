@@ -1,64 +1,64 @@
 Name,Unit
-Peanut,tons
-Cowpea,tons
-Cassava,tons
-Millet,tons
-Maize,tons
-Sorghum,tons
-Rice,tons
+Prod Peanut,tons
+Prod Cowpea,tons
+Prod Cassava,tons
+Prod Millet,tons
+Prod Maize,tons
+Prod Sorghum,tons
+Prod Rice,tons
 Sheeps,number of heads
 Chickens,number of heads
-Assins,number of heads
+Donkeys,number of heads
 Cows,number of heads
 Goats,number of heads
-Lower.quintiles.HH,%
-Upper.quintiles.HH,%
-Gini.coefficient,
-Price_imported.Maize,FCFA/kg
-Price_imported.PB.rice,FCFA/kg
-Price_imported.FB.rice,FCFA/kg
-Price_local.Peanut.Kernels,FCFA/kg
-Price_local.uns..peanut,FCFA/kg
-Price_local.Maize,FCFA/kg
-Price_local.Millet,FCFA/kg
-Price_local.Cowpea,FCFA/kg
-Price_local.Sorghum,FCFA/kg
-Producer.price_H..rice,FCFA/kg
-Producer.price_uns..Peanut,FCFA/kg
-Producer.price_Millet,FCFA/kg
-Producer.price_Sorghum,FCFA/kg
-Producer.price.s..peanut,FCFA/kg
-Producer.price_Maize,FCFA/kg
-Producer.price_Cowpea,FCFA/kg
-Less.-3.ET_Size.Age,%
-Less.-2.ET_Size.Age,%
-Avg.RCS.(ET)_Size.Age,%
-Less.-3.ET_Weight.Height,%
-Less.-2.ET_Weight.Height,%
-Less.+2.ET_Weight.Height,%
-Avg.RCS.(ET)_Weight.Height,
-Less.-3.ET_Weight.Age,%
-Less.-2.ET_Weight.Age,%
-Less..+2.ET_Weight.Age,%
-Avg.RCS.(ET)_Weight.Age,
-Neonatal.mortality,%
-Post-neonatal.mortality,%
-Child.mortality,%
-Juvenile.mortality,%
-Child-juvenile.mortality.,%
+Lower quintiles HH,%
+Upper quintiles HH,%
+Gini coefficient,
+Price imported maize,FCFA/kg
+Price imported Rice,FCFA/kg
+Price imported Frag Rice,FCFA/kg
+Price local peanut,FCFA/kg
+Price local uns peanut,FCFA/kg
+Price local maize,FCFA/kg
+Price local millet,FCFA/kg
+Price local cowpea,FCFA/kg
+Price local sorghum,FCFA/kg
+Producer price H rice,FCFA/kg
+Producer price uns peanut ,FCFA/kg
+Producer price millet,FCFA/kg
+Producer price sorghum,FCFA/kg
+Producer price of peanut,FCFA/kg
+Producer price maize,FCFA/kg
+Producer price cowpea,FCFA/kg
+Underweight less 3 std,%
+Underweight less 2 std,%
+Underweight Ave ,
+Wasting less 3 z,%
+Wasting less minus 2z,%
+Wasting less plus 2z,%
+Wasting Ave,
+Stunting less 3 std,%
+Stunting less minus 2 std,%
+Stunting less plus 2 std,%
+Stunting Ave ,
+Neonatal mortality,%
+Post neonatal mortality,%
+Child mortality,%
+Juvenile mortality,%
+Child juvenile mortality ,%
 Electricity,%
-Time.to.get.water,min
-Wealth.factor,
-HH.heads.w/o.formal.education,%
-Literacy.rt.of.hh.heads,%
-Female.head.of.hh,%
+Time to get water,min
+Wealth factor,
+HH heads w o formal education,%
+Literacy rt of hh heads,%
+Female head of hh,%
 FEI,%
-Insecticide.use,%
-Irrigation.use,%
-Husbandry,%
-Avg.hh.size,units
-Fertilizer.Use,%
-Herbicide.use,%
+Insecticide use,%
+Irrigation use,%
+An Husbandry,%
+Avg hh size,units
+Fertilizer Use,%
+Herbicide use,%
 SMI,
 VGI,
 WDI,

@@ -34,7 +34,7 @@ library(ggcorrplot)
 library(plotly)
 library(DT)
 library(sf)
-library(readxl)
+library(openxlsx)
 library(yarrr)
 library(reshape2)
 library(tidyverse)
@@ -43,6 +43,21 @@ library(tidyverse)
 ```{css my-content, echo = FALSE}
 a {
     color: #241678;
+}
+@media screen and (min-width: 767px) {
+    .sidebar {
+        width: 350px !important;
+        overflow-y: scroll;
+    }
+    .chart-shim {
+        overflow-y: scroll !important;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .chart-shim {
+        overflow-y: scroll !important;
+    }
 }
 ```
 
@@ -57,7 +72,7 @@ social <- read.csv("Data/Social_F.csv", sep = ",", dec = ".")
 human <- read.csv("Data/Human.csv", sep = ",", dec = ".")
 production <- read.csv("Data/Production.csv", sep = ",", dec = ".")
 environment <- read.csv("Data/Environment.csv", sep = ",", dec = ".")
-dataSource <- read_excel("Data/Variables description.xlsx")
+dataSource <- read.xlsx(xlsxFile ="Data/Variables description.xlsx", fillMergedCells = TRUE)
 dataWithUnits <- read.csv("Data/dataWithUnits.csv", sep = ",", dec = ".", check.names=FALSE)
 
 ```
@@ -70,7 +85,7 @@ dataWithUnits <- read.csv("Data/dataWithUnits.csv", sep = ",", dec = ".", check.
 ### Instructions
 
 ```{r}
-HTML('<iframe width="1400" height="600" src = "https://www.youtube.com/embed/A5NL0KVIw2Y" frameborder="0" allowfullscreen></iframe>')
+HTML('<iframe width="1400" height="600" src = "https://www.youtube.com/embed/FQKlk9GV61A" frameborder="0" allowfullscreen></iframe>')
 ```
 
 
@@ -106,7 +121,7 @@ output$yearmap <- renderUI({
     minimo <- min(choice$Year)
     maximo <- max(choice$Year)
     sliderInput("yearmap",
-                "Choose the mean between below years or one year:",
+                "Choose an interval between below years or one year:",
                 min = minimo,
                 max = maximo,
                 value = c(minimo, maximo),
@@ -272,7 +287,7 @@ conditionalPanel(condition = "input.tabselected==3",
 output$stackBar <- renderUI({
   
   selectInput("stackBar",
-               h6("Do you want to stack you bar plot?"),
+               h6("Do you want to stack your bar plot?"),
                choices = c("Yes" = "yes",
                            "No" = "no")
   )
@@ -301,7 +316,7 @@ output$yearBar <- renderUI({
   maximo <- max(choice$Year)
   
   sliderInput("yearBar",
-              h6("Choose the years that will be ploted::"),
+              h6("Choose the years that will be ploted:"),
               min = minimo,
               max = maximo,
               value = c(minimo, maximo),
@@ -409,7 +424,7 @@ output$placeCor <- renderUI({
     group_by(States = eval(parse(text = place)))
   
   selectInput("placeCor",
-              h6("Places you want to visualize on graph:"),
+              h6("Place you want to visualize on graph:"),
               choices = c("Choose one District" = '',
                           choice$States))
   
@@ -447,7 +462,7 @@ output$dataCor <- renderUI({
   list <- gsub("\\.", " ", names(subset(filterCor(),select = -c(1,2))))
   
   shinyWidgets::pickerInput(inputId = "dataCor",
-                            label = h6("Select what data you want to correlate: "),
+                            label = h6("Select the data you want to correlate: "),
                             choices = list,
                             multiple = TRUE
         )
@@ -621,7 +636,7 @@ pale <- reactive({
 })
 
 labels <- reactive({
-  titulo <- gsub("\\ ", ".", input$select)
+  titulo <- input$select
   unity <- units %>%
     filter(Name == titulo)
   unidade <- toString(unity$Unit)
@@ -634,7 +649,7 @@ labels <- reactive({
 
 output$mymap <- renderLeaflet({
   
-  titulo <- gsub("\\ ", ".", input$select)
+  titulo <- input$select
   unity <- units %>%
     filter(Name == titulo)
   unidade <- toString(unity$Unit)
@@ -823,12 +838,13 @@ output$graphBar <- renderPlotly({
   choiceD <- toString(input$dataBar)
   
   if(input$stackBar == "no"){
-    titulo <- gsub("\\ ", ".", input$dataBar)
+    
+    titulo <- input$dataBar
     unity <- units %>%
         filter(Name == titulo)
-    unidade <- toString(unity$Unit)
     
-    legend <- paste(choiceD, "(", unidade, ")")
+    unidade <- toString(unity$Unit)
+    legend <- paste(choiceD, unidade, sep ="\n")
     
     barPlot <- ggplot(dataInputBar(), aes(x=Places, y=Data))+
                   geom_bar(stat="identity", color="#253659", fill="#285585")+
@@ -896,12 +912,16 @@ output$graphBox <- renderPlotly({
   
   choiceD <- toString(input$dataBox)
 
-  titulo <- gsub("\\ ", ".", input$dataBox)
+  
+  titulo <- input$dataBox
   unity <- units %>%
       filter(Name == titulo)
-  unidade <- toString(unity$Unit)
+  unidade <- unity$Unit
   
-  legend <- paste(choiceD, "(", unidade, ")")
+  unidade <- toString(unidade)
+
+  legend <- paste(choiceD, unidade, sep ="\n") 
+  
   
   boxPlot <- ggplot(dataInputBox(), aes(x=Places, y=Data, color=Places))+
                 geom_boxplot(notch=TRUE)+
@@ -1004,12 +1024,13 @@ output$graphLine <- renderPlotly({
   
   if(input$distOrVarLine == "CDL"){
     
-    titulo <- gsub("\\ ", ".", input$dataLine)
+    titulo <- input$dataLine
     unity <- units %>%
       filter(Name == titulo)
+    
     unidade <- toString(unity$Unit)
     
-    legend <- paste(choiceD, "(", unidade, ")")
+    legend <- paste(choiceD, unidade, sep ="\n")
     
     plotLine <- ggplot(dataInputLine(), aes(x = Year, y = Data, color = Districts)) +
     geom_line()+
@@ -1035,7 +1056,7 @@ output$graphLine <- renderPlotly({
           plot.background = element_rect(fill = "#dbd9d9"),
           axis.title.y = element_text(size = 8),
           legend.background = element_rect(fill = "#dbd9d9"))+
-    labs(y = legend)+
+    labs(y = choiceD)+
     scale_x_continuous(breaks = dataInputLine()$Year)+
     scale_y_continuous(labels = comma)
 

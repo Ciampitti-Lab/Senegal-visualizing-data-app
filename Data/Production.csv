@@ -1,4 +1,4 @@
-District,Year,Peanut,Cowpea,Cassava,Millet,Maize,Sorghum,Rice,Sheeps,Chickens,Assins,Cows,Goats,Insecticide use,Irrigation use,Husbandry,Fertilizer Use,Herbicide use
+District,Year,Prod Peanut,Prod Cowpea,Prod Cassava,Prod Millet,Prod Maize,Prod Sorghum,Prod Rice,Sheeps,Chickens,Donkeys,Cows,Goats,Insecticide use,Irrigation use,An Husbandry,Fertilizer Use,Herbicide use
 DAKAR,2015,,,,,,,,,,,,,,,,,
 DAKAR,2016,257.051,365.6114,5708.0245,,842,192.5,,,,,,,,,,,
 DAKAR,2017,1884,61,2599,4,630,170,,2588.88,,,,,8,8,36,,

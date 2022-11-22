@@ -1,4 +1,4 @@
-District,Year,Lower quintiles HH,Upper quintiles HH,Gini coefficient,Price_imported Maize,Price_imported PB rice,Price_imported FB rice,Price_local Peanut Kernels,Price_local uns. peanut,Price_local Maize,Price_local Millet,Price_local Cowpea,Price_local Sorghum,Producer price_H. rice,Producer price_uns. Peanut,Producer price_Millet,Producer price_Sorghum,Producer price s. peanut,Producer price_Maize,Producer price_Cowpea
+District,Year,Lower quintiles HH,Upper quintiles HH,Gini coefficient,Price imported maize,Price imported Rice,Price imported Frag Rice,Price local peanut,Price local uns peanut,Price local maize,Price local millet,Price local cowpea,Price local sorghum,Producer price H rice,Producer price uns peanut ,Producer price millet,Producer price sorghum,Producer price of peanut,Producer price maize,Producer price cowpea
 DAKAR,2015,2.5,43.2,0.2,,,,,,,,,,,,,,,,
 DAKAR,2016,0,55.8,0.8,227.9421,278.0903,349.0278,600.1975,330.8009,232.1923,233.261,435.0692,238.4838,348.6091,,,,,,
 DAKAR,2017,0,57.6,0.09,226.6025,286.2412,351.9227,626.9218,273.0642,237.0251,247.2689,413.4612,259.0865,347.0907,,,,,,

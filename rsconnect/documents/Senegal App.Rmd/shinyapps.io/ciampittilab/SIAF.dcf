@@ -5,9 +5,9 @@ account: ciampittilab
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7151388
-bundleId: 6530041
+bundleId: 6531059
 url: https://ciampittilab.shinyapps.io/SIAF/
-when: 1668792458.32774
-lastSyncTime: 1668792458.32774
+when: 1668811121.9009
+lastSyncTime: 1668811121.90092
 asMultiple: FALSE
 asStatic: FALSE
