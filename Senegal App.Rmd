@@ -426,6 +426,7 @@ output$placeCor <- renderUI({
   selectInput("placeCor",
               h6("Place you want to visualize on graph:"),
               choices = c("Choose one District" = '',
+                          "Whole country" = "wc",
                           choice$States))
   
 })
@@ -449,10 +450,17 @@ filterCor <- reactive({
   place <- toString(names(subset(placeBase, select = c(1))))
   period <- toString(names(subset(placeBase, select = c(2))))
   
-  placeBase %>%
-    filter(eval(parse(text = place)) %in% input$placeCor,
-           eval(parse(text = period)) %in% input$yearCor) %>%
-    select_if(~ !any(is.na(.)))
+  if(input$placeCor == "wc"){
+    placeBase %>%
+      filter(eval(parse(text = period)) %in% input$yearCor) %>%
+      select_if(~ !any(is.na(.)))
+  }else{
+    placeBase %>%
+      filter(eval(parse(text = place)) %in% input$placeCor,
+             eval(parse(text = period)) %in% input$yearCor) %>%
+      select_if(~ !any(is.na(.)))
+  }
+  
   
 })
 
@@ -954,9 +962,16 @@ dataInputCor <- reactive({
   period <- toString(names(subset(filterCor(), select = c(2))))
   choicesD <- gsub("\\ ", ".", input$dataCor)
   
-  filterCor() %>%
-    group_by(Places = eval(parse(text = place)))%>%
-    select_at(vars(choicesD))
+  if(input$placeCor == "wc"){
+    filterCor() %>%
+      select_at(vars(choicesD))
+  }
+  else{
+    filterCor() %>%
+      group_by(Places = eval(parse(text = place)))%>%
+      select_at(vars(choicesD))
+  }
+  
   
 })
 
