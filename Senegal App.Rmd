@@ -2,13 +2,9 @@
 title: "Senegal Data Visualization"
 output: 
   flexdashboard::flex_dashboard:
-        orientation: columns
-        theme:
-            bg: "#dbd9d9"
-            fg: "#285585"
-            primary: "#285585"
-            base_font: !expr bslib::font_google("Lato")
-        vertical_layout: fill
+    orientation: columns
+    vertical_layout: fill
+    logo: www/Logo.png
 runtime: shiny
 ---
 
@@ -38,12 +34,12 @@ library(openxlsx)
 library(yarrr)
 library(reshape2)
 library(tidyverse)
+
 ```
 
-```{css my-content, echo = FALSE}
-a {
-    color: #241678;
-}
+```{css, echo=FALSE}
+/* MOBILE */
+
 @media screen and (min-width: 767px) {
     .sidebar {
         width: 350px !important;
@@ -59,10 +55,144 @@ a {
         overflow-y: scroll !important;
     }
 }
+
+/* FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@300&display=swap');
+.navbar-brand {
+    font-family: 'Montserrat', sans-serif;;
+    color: #166e95 !important;
+    float: right;
+    
+}
+
+.navbar-inverse .navbar-nav>li>a {
+    font-family: 'Montserrat', sans-serif;;
+    color: #545454;
+}
+
+.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:hover, .navbar-inverse .navbar-nav>.active>a:focus {
+    color: #a6a6a6;
+    background-color: #ffffff;
+}
+.navbar-inverse .navbar-nav>li>a:hover, .navbar-inverse .navbar-nav>li>a:focus {
+    color: #a6a6a6;
+    background-color: #166e95;
+}
+
+body{
+    font-family: 'Montserrat', sans-serif;
+    color: #e3ecef;
+    background-color: #e3ecef;
+}
+
+.nav-tabs>li>a {
+    color: #1c5f7e;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:hover, .nav-tabs>li.active>a:focus {
+    color: #1c5f7e;
+    background-color: #e4e4e4;
+}
+
+h5{
+  font-family: 'Montserrat', sans-serif;
+  color: #e3ecef;
+}
+
+h2, p, h3{
+  font-family: 'Montserrat', sans-serif;
+  color: #1c5f7e;
+}
+
+.chart-title {
+    font-family: 'Montserrat', sans-serif;
+    color: #1c5f7e;
+}
+
+/* NAVBAR */
+.navbar-inverse {
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+
+.navbar-logo{
+    width: 75px;
+}
+
+
+/*  SIDEBAR */
+.section.sidebar {
+    background-color: #1c5f7e;
+}
+
+/* SLIDER */
+.irs--shiny .irs-bar {
+    background: #a6a6a6;!important
+}
+.irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
+    color: #166e95;
+    font-family: 'Open Sans';
+    background-color: #d9d9d9;
+}
+.irs-with-grid .irs-grid {
+    display: none;
+}
+
+/* SWITCH */
+.bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary, .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-primary {
+    background: #d9d9d9;
+    color: #fff;
+}
+.bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-default, .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-default {
+    background: black;
+    color: #fff;
+}
+
+.bootstrap-switch.bootstrap-switch-focused {
+    border-color: #1c5f7e;
+}
+
+/* SELECTIZE */
+.selectize-input.full {
+  background-color: #d9d9d9;
+}
+.selectize-control.single .selectize-input:after {
+    border-color: #166e95 transparent transparent transparent;
+    border-width: 10px 10px 0 10px;
+}
+
+.selectize-input, selectize-control.single .selectize-input.input-active{
+  background-color: #d9d9d9 !important;
+}
+.selectize-control.single .selectize-input.dropdown-active:after {
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #166e95 transparent;
+}
+
+/* DROPDOWN - BUTTON */
+.btn-default {
+    color: black;
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+}
+.btn-default:hover {
+    color: black;
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+}
+.btn-default:active, .btn-default.active, .open>.dropdown-toggle.btn-default {
+    color: black;
+    background-color: #d9d9d9 !important;
+    border-color: #d9d9d9 !important;
+}
+.bootstrap-select .dropdown-toggle .caret {
+    border-width: 10px 10px 0 10px !important;
+}
+
 ```
 
-```{r message=FALSE}
 
+```{r message=FALSE}
 Sys.setenv(SHAPE_RESTORE_SHX="YES")
 places <- st_read("Shapefiles/zonal_stats.shp", stringsAsFactors=FALSE, quiet=TRUE)
 placeBase <- read.csv("Data/Full Data.csv", sep=",", dec=".")
@@ -102,7 +232,7 @@ conditionalPanel(tags$style(type="text/css",
                   condition = "input.tabselected==1",
                   uiOutput("select"),
                   uiOutput("yearmap"),
-                 h6("Mean or sum of data between those years:"),
+                 h5("Mean or sum of data between those years:"),
                  uiOutput("morsummap")
                 )
 list <- gsub("\\.", " ", names(subset(placeBase,select = -c(1,2))))
@@ -136,8 +266,7 @@ output$morsummap <- renderUI({
    inputId = "morsummap",
    value = TRUE,
    onLabel = "Mean",
-   offLabel = "Sum",
-   width = "400px")
+   offLabel = "Sum")
   
 })
 
@@ -771,8 +900,8 @@ output$graphSIAF <- renderPlotly({
       group.colours = paletaTransparente
     ) +
     theme(
-        plot.background = element_rect(fill = "#dbd9d9"),
-        panel.background = element_rect(fill = "#dbd9d9"),
+        plot.background = element_rect(fill = "#e3ecef"),
+        panel.background = element_rect(fill = "#e3ecef"),
         legend.position = "top",
         legend.justification = c(1, 0),
         legend.text = element_text(size = 8, family = "roboto"),
@@ -858,10 +987,10 @@ output$graphBar <- renderPlotly({
                   geom_bar(stat="identity", color="#253659", fill="#285585")+
                   geom_text(aes(label=round(Data, 2)), vjust=1.6, color="#253659", size=4)+
                   theme(
-                    panel.background = element_rect(fill = "#dbd9d9",
-                                                    colour = "#c7c7c9",
+                    panel.background = element_rect(fill = "#e3ecef",
+                                                    colour = "#e3ecef",
                                                     size = 0.5, linetype = "solid"),
-                    plot.background = element_rect(fill = "#dbd9d9"),
+                    plot.background = element_rect(fill = "#e3ecef"),
                     axis.title.y = element_text(size = 8)
                   )+
                   labs(y = legend)+
@@ -880,10 +1009,10 @@ output$graphBar <- renderPlotly({
     barPlot <- ggplot(data_long, aes(x=Places, y=value, group = Variables, fill=Variables))+
                   geom_col()+
                   theme(
-                    panel.background = element_rect(fill = "#dbd9d9",
-                                                    colour = "#c7c7c9",
+                    panel.background = element_rect(fill = "#e3ecef",
+                                                    colour = "#e3ecef",
                                                     size = 0.5, linetype = "solid"),
-                    plot.background = element_rect(fill = "#dbd9d9"),
+                    plot.background = element_rect(fill = "#e3ecef"),
                     axis.title.y = element_text(size = 8)
                   )+
                   labs(y = legend)+
@@ -934,10 +1063,10 @@ output$graphBox <- renderPlotly({
   boxPlot <- ggplot(dataInputBox(), aes(x=Places, y=Data, color=Places))+
                 geom_boxplot(notch=TRUE)+
                 theme(
-                  panel.background = element_rect(fill = "#dbd9d9",
-                                                  colour = "#c7c7c9",
+                  panel.background = element_rect(fill = "#e3ecef",
+                                                  colour = "#e3ecef",
                                                   size = 0.5, linetype = "solid"),
-                  plot.background = element_rect(fill = "#dbd9d9"),
+                  plot.background = element_rect(fill = "#e3ecef"),
                   axis.title.y = element_text(size = 8)
                 )+
                 labs(y = legend)+
@@ -993,8 +1122,8 @@ output$graphCor <- renderPlotly({
                                    margin=margin(-3,0,0,0)),
           axis.text.y=element_text(size=9),
           panel.grid.major=element_blank(),
-          plot.background = element_rect(fill = "#dbd9d9"),
-          panel.background = element_rect(fill = "#dbd9d9")) 
+          plot.background = element_rect(fill = "#e3ecef"),
+          panel.background = element_rect(fill = "#e3ecef")) 
   
   ggplotly(corPlot)
   
@@ -1049,10 +1178,10 @@ output$graphLine <- renderPlotly({
     
     plotLine <- ggplot(dataInputLine(), aes(x = Year, y = Data, color = Districts)) +
     geom_line()+
-    theme(panel.background = element_rect(fill = "#dbd9d9"),
-          plot.background = element_rect(fill = "#dbd9d9"),
+    theme(panel.background = element_rect(fill = "#e3ecef"),
+          plot.background = element_rect(fill = "#e3ecef"),
           axis.title.y = element_text(size = 8),
-          legend.background = element_rect(fill = "#dbd9d9"))+
+          legend.background = element_rect(fill = "#e3ecef"))+
     labs(y = legend)+
     scale_x_continuous(breaks = dataInputLine()$Year)+
     scale_y_continuous(labels = comma)
@@ -1067,10 +1196,10 @@ output$graphLine <- renderPlotly({
     
     plotLine <- ggplot(data_long, aes(x = Year, y = value, colour = Variables)) +
     geom_line()+
-    theme(panel.background = element_rect(fill = "#dbd9d9"),
-          plot.background = element_rect(fill = "#dbd9d9"),
+    theme(panel.background = element_rect(fill = "#e3ecef"),
+          plot.background = element_rect(fill = "#e3ecef"),
           axis.title.y = element_text(size = 8),
-          legend.background = element_rect(fill = "#dbd9d9"))+
+          legend.background = element_rect(fill = "#e3ecef"))+
     labs(y = choiceD)+
     scale_x_continuous(breaks = dataInputLine()$Year)+
     scale_y_continuous(labels = comma)
@@ -1120,11 +1249,11 @@ output$dataInput <- DT::renderDataTable({dataWithUnits},options = list(pageLengt
 <p style="text-align: justify; padding: 20px">This platform targets the needs of donor-investment, policymakers, researchers and on-ground extension-specialists to support planned interventions. Lastly, this platform will serve as an example for the application of the SIAF not only for Senegal but for multiple regions around the world.</p>
 <a href="https://www.siildigitalagconsortium.com/"> <h6 style="padding: 10px"> Click here to learn more about the Digital Tools, Geospatial and Farming Systems Consortium</h6></a>
 <h3 style="padding: 10px"> The five domains of Sustainable Intensification: </h3>
-<h5 style="padding: 10px"> Productivity: This domain is focused in everything about the land, production, productivity, outputs and inputs.</h5>
-<h5 style="padding: 10px"> Economic: This is the domain related to profitability of agricultural activities and their indicators apart from land, such as: water, nutrients, labor and capital. Also, issues that may affect the probability of investment i.e. market participation are in this domain</h5>
-<h5 style="padding: 10px"> Environment: Natural resources that supports agriculture (i.e. soil and water), environmental services affected by agricultural practices (i.e. habitat, water-holding capacity), and pollution which main source is agriculture (pesticides and greenhouse gases) fit in this domain. </h5>
-<h5 style="padding: 10px"> Human condition: Nutrition status, food security and capacity to learn and adapt, in other words, everything that affects one individual.</h5>
-<h5 style="padding: 10px"> Social: Here are the social interactions such as female participation, gender equality, ability to resolve conflicts related to agriculture and management of resources.</p>
+<p style="padding: 10px"> Productivity: This domain is focused in everything about the land, production, productivity, outputs and inputs.</p>
+<p style="padding: 10px"> Economic: This is the domain related to profitability of agricultural activities and their indicators apart from land, such as: water, nutrients, labor and capital. Also, issues that may affect the probability of investment i.e. market participation are in this domain</p>
+<p style="padding: 10px"> Environment: Natural resources that supports agriculture (i.e. soil and water), environmental services affected by agricultural practices (i.e. habitat, water-holding capacity), and pollution which main source is agriculture (pesticides and greenhouse gases) fit in this domain. </p>
+<p style="padding: 10px"> Human condition: Nutrition status, food security and capacity to learn and adapt, in other words, everything that affects one individual.</p>
+<p style="padding: 10px"> Social: Here are the social interactions such as female participation, gender equality, ability to resolve conflicts related to agriculture and management of resources.</p>
 <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> <h6 style="padding: 10px"> Click here to learn more about SIAF</h6></a>
 <h3 style="padding: 10px"> Authors:</h3>
 <p style="text-align: justify; padding: 20px">Gustavo N. Santiago, Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A. Pouyan Nejadhashemi and Ignacio A. Ciampitti</p>
