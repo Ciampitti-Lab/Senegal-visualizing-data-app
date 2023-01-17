@@ -1240,26 +1240,6 @@ output$dataInput <- DT::renderDataTable({dataWithUnits},options = list(pageLengt
 
 ```
 
-# About
-
-### Description
-
-<p style="text-align: justify; padding: 20px"> The process of assessing the impact of agricultural interventions is a key point when deciding on future research investments and new policies. This task requires knowledge of the chain of reactions in multiple realms that occur after an intervention. Filling this critical gap, USAID’s Feed the Future Innovation Lab for Collaborative Research in Sustainable Intensification has developed the <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> Sustainable Intensification Framework Domains (SIAF) </a> to assess the impact of interventions considering five domains (productivity, economic, environmental, human and social). Until recently, however, there has been a lack of integration across the domains relative to the evaluation of agricultural interventions for different regions around the globe. </p>
-<p style="text-align: justify; padding: 20px">A recent review executed by our team identified almost no studies addressing all five domains of the SIAF simultaneously, emphasizing this lack of integration. Many challenges that result from this issue include data isolation (relevant data in multiple individual databases), scale (data with different spatial and temporal scales), and integrity (lack of complete datasets). Therefore, we propose to design an interactive dashboard to aggregate and summarize the available open-access data layers using the SIAF as a platform to facilitate the visualization of the domain interactions. Furthermore, we seek to create a unified data resource to enable integration and comparison across both spatial and temporal scales.</p>
-<p style="text-align: justify; padding: 20px">This platform targets the needs of donor-investment, policymakers, researchers and on-ground extension-specialists to support planned interventions. Lastly, this platform will serve as an example for the application of the SIAF not only for Senegal but for multiple regions around the world.</p>
-<a href="https://www.siildigitalagconsortium.com/"> <h6 style="padding: 10px"> Click here to learn more about the Digital Tools, Geospatial and Farming Systems Consortium</h6></a>
-<h3 style="padding: 10px"> The five domains of Sustainable Intensification: </h3>
-<p style="padding: 10px"> Productivity: This domain is focused in everything about the land, production, productivity, outputs and inputs.</p>
-<p style="padding: 10px"> Economic: This is the domain related to profitability of agricultural activities and their indicators apart from land, such as: water, nutrients, labor and capital. Also, issues that may affect the probability of investment i.e. market participation are in this domain</p>
-<p style="padding: 10px"> Environment: Natural resources that supports agriculture (i.e. soil and water), environmental services affected by agricultural practices (i.e. habitat, water-holding capacity), and pollution which main source is agriculture (pesticides and greenhouse gases) fit in this domain. </p>
-<p style="padding: 10px"> Human condition: Nutrition status, food security and capacity to learn and adapt, in other words, everything that affects one individual.</p>
-<p style="padding: 10px"> Social: Here are the social interactions such as female participation, gender equality, ability to resolve conflicts related to agriculture and management of resources.</p>
-<a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> <h6 style="padding: 10px"> Click here to learn more about SIAF</h6></a>
-<h3 style="padding: 10px"> Authors:</h3>
-<p style="text-align: justify; padding: 20px">Gustavo N. Santiago, Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A. Pouyan Nejadhashemi and Ignacio A. Ciampitti</p>
-
-
-
 # Data Source
 
 ```{r}
@@ -1285,3 +1265,21 @@ DT::dataTableOutput("dataInputSource",
 output$dataInputSource <- DT::renderDataTable({dataSource},options = list(pageLength = 10,
                                                                           scrollX = TRUE))
 ```
+
+# About
+
+### Description
+
+<p style="text-align: justify; padding: 20px"> The process of assessing the impact of agricultural interventions is a key point when deciding on future research investments and new policies. This task requires knowledge of the chain of reactions in multiple realms that occur after an intervention. Filling this critical gap, USAID’s Feed the Future Innovation Lab for Collaborative Research in Sustainable Intensification has developed the <a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> Sustainable Intensification Framework Domains (SIAF) </a> to assess the impact of interventions considering five domains (productivity, economic, environmental, human and social). Until recently, however, there has been a lack of integration across the domains relative to the evaluation of agricultural interventions for different regions around the globe. </p>
+<p style="text-align: justify; padding: 20px">A recent review executed by our team identified almost no studies addressing all five domains of the SIAF simultaneously, emphasizing this lack of integration. Many challenges that result from this issue include data isolation (relevant data in multiple individual databases), scale (data with different spatial and temporal scales), and integrity (lack of complete datasets). Therefore, we propose to design an interactive dashboard to aggregate and summarize the available open-access data layers using the SIAF as a platform to facilitate the visualization of the domain interactions. Furthermore, we seek to create a unified data resource to enable integration and comparison across both spatial and temporal scales.</p>
+<p style="text-align: justify; padding: 20px">This platform targets the needs of donor-investment, policymakers, researchers and on-ground extension-specialists to support planned interventions. Lastly, this platform will serve as an example for the application of the SIAF not only for Senegal but for multiple regions around the world.</p>
+<a href="https://www.siildigitalagconsortium.com/"> <h6 style="padding: 10px"> Click here to learn more about the Digital Tools, Geospatial and Farming Systems Consortium</h6></a>
+<h3 style="padding: 10px"> The five domains of Sustainable Intensification: </h3>
+<p style="padding: 10px"> Productivity: This domain is focused in everything about the land, production, productivity, outputs and inputs.</p>
+<p style="padding: 10px"> Economic: This is the domain related to profitability of agricultural activities and their indicators apart from land, such as: water, nutrients, labor and capital. Also, issues that may affect the probability of investment i.e. market participation are in this domain</p>
+<p style="padding: 10px"> Environment: Natural resources that supports agriculture (i.e. soil and water), environmental services affected by agricultural practices (i.e. habitat, water-holding capacity), and pollution which main source is agriculture (pesticides and greenhouse gases) fit in this domain. </p>
+<p style="padding: 10px"> Human condition: Nutrition status, food security and capacity to learn and adapt, in other words, everything that affects one individual.</p>
+<p style="padding: 10px"> Social: Here are the social interactions such as female participation, gender equality, ability to resolve conflicts related to agriculture and management of resources.</p>
+<a href="https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensification"> <h6 style="padding: 10px"> Click here to learn more about SIAF</h6></a>
+<h3 style="padding: 10px"> Authors:</h3>
+<p style="text-align: justify; padding: 20px">Gustavo N. Santiago, Ana J.P. Carcedo, Molly E. Brown, Jason Neff, Kathryn Grace, Paul West, James Gerber, A. Pouyan Nejadhashemi and Ignacio A. Ciampitti</p>
