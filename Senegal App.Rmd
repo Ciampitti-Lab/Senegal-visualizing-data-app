@@ -417,8 +417,8 @@ output$stackBar <- renderUI({
   
   selectInput("stackBar",
                h6("Do you want to stack your bar plot?"),
-               choices = c("Yes" = "yes",
-                           "No" = "no")
+               choices = c("No" = "no",
+                           "Yes" = "yes")
   )
   
 })
@@ -991,7 +991,10 @@ output$graphBar <- renderPlotly({
                                                     colour = "#e3ecef",
                                                     size = 0.5, linetype = "solid"),
                     plot.background = element_rect(fill = "#e3ecef"),
-                    axis.title.y = element_text(size = 8)
+                    axis.title.y = element_text(size = 15),
+                    axis.title.x = element_text(size = 15),
+                    axis.text.y = element_text(size = 15),
+                    axis.text.x = element_text(size = 15)
                   )+
                   labs(y = legend)+
                   labs(x = "Districts")+
@@ -1013,7 +1016,10 @@ output$graphBar <- renderPlotly({
                                                     colour = "#e3ecef",
                                                     size = 0.5, linetype = "solid"),
                     plot.background = element_rect(fill = "#e3ecef"),
-                    axis.title.y = element_text(size = 8)
+                    axis.title.y = element_text(size = 15),
+                    axis.title.x = element_text(size = 15),
+                    axis.text.y = element_text(size = 15),
+                    axis.text.x = element_text(size = 15)
                   )+
                   labs(y = legend)+
                   labs(x = "Districts")+
@@ -1067,7 +1073,12 @@ output$graphBox <- renderPlotly({
                                                   colour = "#e3ecef",
                                                   size = 0.5, linetype = "solid"),
                   plot.background = element_rect(fill = "#e3ecef"),
-                  axis.title.y = element_text(size = 8)
+                  axis.title.y = element_text(size = 15),
+                  axis.title.x = element_text(size = 15),
+                  axis.text.y = element_text(size = 15),
+                  axis.text.x = element_text(size = 15),
+                  legend.background = element_rect(fill = "#e3ecef"),
+                  legend.text = element_text(size = 15)
                 )+
                 labs(y = legend)+
         scale_y_continuous(labels = comma)
@@ -1115,12 +1126,12 @@ output$graphCor <- renderPlotly({
                         hc.order = TRUE,
                         type = "lower",
                         lab = TRUE,
-                        lab_size = 2,
+                        lab_size = 4,
                         show.diag = TRUE,
                         colors = c("red", "white","blue")) +
-    theme(axis.text.x=element_text(size=9, angle=45, vjust=1, hjust=1, 
+    theme(axis.text.x=element_text(size=12, angle=45, vjust=1, hjust=1, 
                                    margin=margin(-3,0,0,0)),
-          axis.text.y=element_text(size=9),
+          axis.text.y=element_text(size=12),
           panel.grid.major=element_blank(),
           plot.background = element_rect(fill = "#e3ecef"),
           panel.background = element_rect(fill = "#e3ecef")) 
@@ -1180,8 +1191,12 @@ output$graphLine <- renderPlotly({
     geom_line()+
     theme(panel.background = element_rect(fill = "#e3ecef"),
           plot.background = element_rect(fill = "#e3ecef"),
-          axis.title.y = element_text(size = 8),
-          legend.background = element_rect(fill = "#e3ecef"))+
+          axis.title.y = element_text(size = 15),
+          axis.title.x = element_text(size = 15),
+          axis.text.y = element_text(size = 15),
+          axis.text.x = element_text(size = 15),
+          legend.background = element_rect(fill = "#e3ecef"),
+          legend.text = element_text(size = 15))+
     labs(y = legend)+
     scale_x_continuous(breaks = dataInputLine()$Year)+
     scale_y_continuous(labels = comma)
