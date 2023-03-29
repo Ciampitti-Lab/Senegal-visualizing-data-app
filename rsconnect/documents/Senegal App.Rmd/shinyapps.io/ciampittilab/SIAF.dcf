@@ -1,0 +1,13 @@
+name: SIAF
+title: SIAF
+username:
+account: ciampittilab
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7151388
+bundleId: 6773212
+url: https://ciampittilab.shinyapps.io/SIAF/
+when: 1674660604.54803
+lastSyncTime: 1674660604.54804
+asMultiple: FALSE
+asStatic: FALSE

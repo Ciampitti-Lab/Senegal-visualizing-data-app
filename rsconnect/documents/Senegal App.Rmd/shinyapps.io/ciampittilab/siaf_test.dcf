@@ -1,0 +1,13 @@
+name: siaf_test
+title: siaf_test
+username:
+account: ciampittilab
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7174667
+bundleId: 6357089
+url: https://ciampittilab.shinyapps.io/siaf_test/
+when: 1664564828.61593
+lastSyncTime: 1664564828.61594
+asMultiple: FALSE
+asStatic: FALSE

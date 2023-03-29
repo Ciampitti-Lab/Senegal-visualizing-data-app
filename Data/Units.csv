@@ -1,0 +1,65 @@
+Name,Unit
+Prod Peanut,tons
+Prod Cowpea,tons
+Prod Cassava,tons
+Prod Millet,tons
+Prod Maize,tons
+Prod Sorghum,tons
+Prod Rice,tons
+Sheeps,number of heads
+Chickens,number of heads
+Donkeys,number of heads
+Cows,number of heads
+Goats,number of heads
+Lower quintiles HH,%
+Upper quintiles HH,%
+Gini coefficient,
+Price imported maize,FCFA/kg
+Price imported Rice,FCFA/kg
+Price imported Frag Rice,FCFA/kg
+Price local peanut,FCFA/kg
+Price local uns peanut,FCFA/kg
+Price local maize,FCFA/kg
+Price local millet,FCFA/kg
+Price local cowpea,FCFA/kg
+Price local sorghum,FCFA/kg
+Producer price H rice,FCFA/kg
+Producer price uns peanut ,FCFA/kg
+Producer price millet,FCFA/kg
+Producer price sorghum,FCFA/kg
+Producer price of peanut,FCFA/kg
+Producer price maize,FCFA/kg
+Producer price cowpea,FCFA/kg
+Underweight less 3 std,%
+Underweight less 2 std,%
+Underweight Ave ,
+Wasting less 3 z,%
+Wasting less minus 2z,%
+Wasting less plus 2z,%
+Wasting Ave,
+Stunting less 3 std,%
+Stunting less minus 2 std,%
+Stunting less plus 2 std,%
+Stunting Ave ,
+Neonatal mortality,%
+Post neonatal mortality,%
+Child mortality,%
+Juvenile mortality,%
+Child juvenile mortality ,%
+Electricity,%
+Time to get water,min
+Wealth factor,
+HH heads w o formal education,%
+Literacy rt of hh heads,%
+Female head of hh,%
+FEI,%
+Insecticide use,%
+Irrigation use,%
+An Husbandry,%
+Avg hh size,units
+Fertilizer Use,%
+Herbicide use,%
+SMI,
+VGI,
+WDI,
+Precipitation,mm

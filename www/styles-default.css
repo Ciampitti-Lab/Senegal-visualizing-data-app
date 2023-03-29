@@ -1,0 +1,126 @@
+/* MOBILE */
+
+@media screen and (min-width: 767px) {
+    .sidebar {
+        width: 350px !important;
+        overflow-y: scroll;
+    }
+    .chart-shim {
+        overflow-y: scroll !important;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .chart-shim {
+        overflow-y: scroll !important;
+    }
+}
+
+/* FONTS */
+.navbar-brand {
+    font-family: 'Open Sans';
+    color: #166e95;
+    
+}
+
+.navbar-inverse .navbar-nav>li>a {
+    font-family: 'Open Sans';
+    color: #545454;
+}
+
+.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:hover, .navbar-inverse .navbar-nav>.active>a:focus {
+    color: #a6a6a6;
+    background-color: #ffffff;
+}
+
+body{
+    font-family: 'Open Sans';
+    color: #e3ecef;
+    background-color: #e3ecef;
+}
+
+.nav-tabs>li>a {
+    color: #1c5f7e;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:hover, .nav-tabs>li.active>a:focus {
+    color: #1c5f7e;
+    background-color: #e4e4e4;
+}
+
+/* NAVBAR */
+.navbar-inverse {
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+
+.navbar-logo{
+    width: 25px;
+    margin-top: 10px;
+}
+
+
+/*  SIDEBAR */
+.section.sidebar {
+    background-color: #1c5f7e;
+}
+
+/* SLIDER */
+.irs--shiny .irs-bar {
+    background: #a6a6a6;!important
+}
+.irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
+    color: #166e95;
+    font-family: 'Open Sans';
+    background-color: #d9d9d9;
+}
+.irs-with-grid .irs-grid {
+    display: none;
+}
+
+/* SWITCH */
+.bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary, .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-primary {
+    background: #d9d9d9;
+    color: #fff;
+}
+.bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-default, .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-default {
+    background: black;
+    color: #fff;
+}
+
+/* SELECTIZE */
+.selectize-input.full {
+  background-color: #d9d9d9;
+}
+.selectize-control.single .selectize-input:after {
+    border-color: #166e95 transparent transparent transparent;
+    border-width: 10px 10px 0 10px;
+}
+
+.selectize-input, selectize-control.single .selectize-input.input-active{
+  background-color: #d9d9d9;
+}
+.selectize-control.single .selectize-input.dropdown-active:after {
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #166e95 transparent;
+}
+
+/* DROPDOWN - BUTTON */
+.btn-default {
+    color: black;
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+}
+.btn-default:hover {
+    color: black;
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+}
+.btn-default:active, .btn-default.active, .open>.dropdown-toggle.btn-default {
+    color: black;
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+}
+.bootstrap-select .dropdown-toggle .caret {
+    border-width: 10px 10px 0 10px;
+}
