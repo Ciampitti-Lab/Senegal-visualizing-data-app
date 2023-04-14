@@ -15,6 +15,8 @@
 3. [Future Works](#future-works)
 4. [Acknowledgements](#acknowledgements)
 
+---
+
 ## Objective
 Taking into account the need of a digital tool to provide open access to harmonized and scaled data of different [Sustainable Intensification Assessment Framework (SIAF)](https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensificatio) domains, this app was created with the objective of:
 1. Generate an interactive dashboard so policy-makers and researchers can visualize the data and connect the domains;
@@ -33,7 +35,7 @@ The design was made in Canva and can be seen on file Senegal App.pdf
 
 ### Structure
 
-The app were made using all into one Rmd file due to facilitating the visualization of the components inside it and the usage of **flexdashboard** library. The CSS code were made inside the Rmd file. There are 3 "son" folders containing files used in the app:
+The app were all made into one Rmd file due to facilitating the visualization of the components inside it and the usage of **flexdashboard** library. The CSS code were made inside the Rmd file. There are 3 "son" folders containing files used in the app:
 - Data: containing all the csv files used;
 - www: all the images and;
 - SHAPEFILES: shapefiles for Senegal districts.
