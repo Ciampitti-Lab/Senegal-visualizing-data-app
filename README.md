@@ -2,7 +2,8 @@
 
 ## Table of Contents
 1. [Objective](#objective)
-2. [Description](#description)
+2. [Important](#important)
+3. [Description](#description)
     1. [Structure](#structure)
     2. [Libraries](#libraries)
     3. [CSS](#css)
@@ -12,8 +13,8 @@
     7. [Data](#data)
     8. [Data Source](#data-source)
     9. [About](#about)
-3. [Future Works](#future-works)
-4. [Acknowledgements](#acknowledgements)
+4. [Future Works](#future-works)
+5. [Acknowledgements](#acknowledgements)
 
 ## Objective
 Taking into account the need of a digital tool to provide open access to harmonized and scaled data of different [Sustainable Intensification Assessment Framework (SIAF)](https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensificatio) domains, this app was created with the objective of:
@@ -22,6 +23,13 @@ Taking into account the need of a digital tool to provide open access to harmoni
 3. Provide the sources, methodology of manipulation, temporal and spatial resolution and year of acquisition of data used;
 
 ---
+
+## Important
+
+While running this app in an IDE, some warnings will appear. However this warnings are related to the empiness of the dropdown menu and do not affect the app oppening or performance.
+The instructions video also will not be available while running in the IDE, but if the user access the [website](https://ciampittilab.shinyapps.io/SIAF), the video can be visualized.
+
+<br>
 
 ## Description
 
