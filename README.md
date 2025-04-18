@@ -16,6 +16,15 @@
 4. [Future Works](#future-works)
 5. [Acknowledgements](#acknowledgements)
 
+
+---
+
+## Contributors
+
+- Gustavo Nocera Santiago ([@GustavoSantiago113](https://github.com/GustavoSantiago113))
+
+---
+
 ## Objective
 Taking into account the need for a digital tool to provide open access to harmonized and scaled data of different [Sustainable Intensification Assessment Framework (SIAF)](https://sitoolkit.com/assessment-framework/the-five-domains-of-sustainable-intensificatio) domains, this app was created with the objective of:
 1. Generate an interactive dashboard so policy-makers and researchers can visualize the data and connect the domains;
